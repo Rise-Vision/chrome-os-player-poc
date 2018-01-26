@@ -22,4 +22,6 @@ npm install
 npm run watch
 ```
 
-* Load the packaged app on `chrome://extensions`
+* Edit the files under `src`. Webpack will generate a `main.js` file into `app`. This directory contains all the files required for the packaged app.
+
+* Load the packaged app directory `app` on `chrome://extensions`
