@@ -4,6 +4,9 @@
   "description": "Rise Vision Chrome OS Proof of Concept",
   "main": "src/app.js",
   "scripts": {
+    "build": "webpack",
+    "predist": "npm run build",
+    "dist": "rimraf dist && mkdir dist && zip dist/app.zip -r app",
     "watch": "webpack --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cd server && python -m SimpleHTTPServer 9000"
@@ -20,6 +23,7 @@
   "homepage": "https://github.com/Rise-Vision/chrome-os-player-poc#readme",
   "devDependencies": {
     "eslint": "^4.16.0",
+    "rimraf": "^2.6.2",
     "webpack": "^3.10.0"
   }
 }
