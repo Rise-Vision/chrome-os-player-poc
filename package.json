@@ -1,0 +1,25 @@
+{
+  "name": "chrome-os-player-poc",
+  "version": "1.0.0",
+  "description": "Rise Vision Chrome OS Proof of Concept",
+  "main": "src/app.js",
+  "scripts": {
+    "watch": "webpack --watch",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "cd server && python -m SimpleHTTPServer 9000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rise-Vision/chrome-os-player-poc.git"
+  },
+  "author": "Rise Vision",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Rise-Vision/chrome-os-player-poc/issues"
+  },
+  "homepage": "https://github.com/Rise-Vision/chrome-os-player-poc#readme",
+  "devDependencies": {
+    "eslint": "^4.16.0",
+    "webpack": "^3.10.0"
+  }
+}

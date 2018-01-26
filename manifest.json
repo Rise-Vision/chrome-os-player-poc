@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+  "name": "Chrome OS Player PoC",
+  "version": "0.1",
+  "permissions": [
+    "http://localhost:9000/",
+    "http://192.168.0.12:9000/",
+    "https://apis.google.com/",
+    "https://www.googleapis.com/",
+    "fileSystem",
+    "unlimitedStorage", 
+    "system.cpu", 
+    "system.memory", 
+    "system.storage", 
+    "system.display", 
+    "serial"],
+  "minimum_chrome_version": "52",
+  "icons": {
+    "16": "icon_16.png",
+    "128": "icon_128.png"
+  },
+  "app": {
+    "background": {
+      "scripts": ["main.js"]
+    }
+  },
+  "kiosk_enabled": true,
+  "kiosk_only" : false
+}
