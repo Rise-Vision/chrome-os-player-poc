@@ -22,10 +22,10 @@ function init() {
     createHelloWorldWindow();
 
     const modules = {
-        messaging: 'http://localhost:9000/messaging.js',
-        logging: 'http://localhost:9000/logging.js',
-        watchdog: 'http://localhost:9000/watchdog.js',
-        displayControl: 'http://localhost:9000/displayControl.js'
+        messaging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/messaging.js',
+        logging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/logging.js',
+        watchdog: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/watchdog.js',
+        displayControl: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/displayControl.js'
     };
 
     const channel = new BroadcastChannel('local-messaging-module');
