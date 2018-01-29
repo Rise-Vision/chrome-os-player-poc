@@ -30,10 +30,6 @@ jobs:
             key: node-cache-v2{{ checksum "package.json" }}
             paths:
               - ./node_modules
-        - persist_to_workspace:
-            root: .
-            paths:
-              - build
 
   "deploy":
     docker: *DOCKERIMAGE
@@ -65,8 +61,6 @@ workflows:
                 - /^stage\/.*/
                 - /^staging\/.*/
       - "deploy":
-          requires:
-            - build
           filters:
             branches:
               only:
