@@ -17,24 +17,6 @@ jobs:
           command: npm run test
           no_output_timeout: 1m
 
-  "build":
-      docker: *DOCKERIMAGE
-      steps:
-        - checkout
-        - attach_workspace:
-            at: .
-        - restore_cache:
-            key: node-cache-v2{{ checksum "package.json" }}
-        - run: npm run build
-        - save_cache:
-            key: node-cache-v2{{ checksum "package.json" }}
-            paths:
-              - ./node_modules
-        - persist_to_workspace:
-            root: .
-            paths:
-              - build
-
   "deploy":
     docker: *DOCKERIMAGE
     steps:
@@ -54,19 +36,7 @@ workflows:
   workflow1:
     jobs:
       - "test"
-      - "build":
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - master
-                - build/stable
-                - /^stage\/.*/
-                - /^staging\/.*/
       - "deploy":
-          requires:
-            - build
           filters:
             branches:
               only:
