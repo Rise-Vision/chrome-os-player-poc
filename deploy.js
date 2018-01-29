@@ -4,7 +4,7 @@ const program = require('commander');
 const fs = require("fs");
 
 const spawnSync = require("child_process").spawnSync;
-const credentialsPath = "private-keys/poc-credentials.json";
+const credentialsPath = "private-keys/chrome-os-player/poc-credentials.json";
 function utf8() {return {encoding: "utf8"};}
 const credentials = JSON.parse(fs.readFileSync(credentialsPath, utf8()));
 const appId = process.env.CIRCLE_BRANCH === "master" ? credentials.production_app_id_no_restart : credentials.test_app_id;
