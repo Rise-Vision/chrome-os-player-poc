@@ -7,9 +7,9 @@
     "build": "webpack",
     "predist": "npm run build && rimraf dist && mkdir dist && cp -r app/* dist",
     "dist": "node deploy.js -i && zip dist/app.zip -r dist",
-    "prepublish": "npm run dist",
-    "publish": "node deploy.js -p",
-    "postpublish": "rimraf dist",
+    "predeploy": "npm run dist",
+    "deploy": "node deploy.js -p",
+    "postdeploy": "rimraf dist",
     "watch": "webpack --watch",
     "test": "echo \"Error: no test specified\" && exit 0",
     "start": "cd server && python -m SimpleHTTPServer 9000"

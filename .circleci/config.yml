@@ -47,7 +47,7 @@ jobs:
       - run: cp -rf ./private-keys/chrome-os-player/poc-credentials.js ./private-keys
       - run:
           name: Deploy
-          command: npm run publish
+          command: npm run deploy
 
 workflows:
   version: 2
