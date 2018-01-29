@@ -68,6 +68,7 @@ function publish() {
   "-H", "Authorization: Bearer " + accessToken, 
   "-H", "x-goog-api-verison: 2",
   "-H", "Content-Length: 0",
+  "-H", "publishTarget: trustedTesters",
   "-X", "POST",
   "-vv",
   "-fail",
