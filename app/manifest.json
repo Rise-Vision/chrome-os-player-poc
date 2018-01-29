@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Chrome OS Player PoC",
-  "version": "18.1.28.6902",
+  "version": "0.0.0.0",
   "permissions": [
     "http://localhost:9000/",
     "https://raw.githubusercontent.com/",

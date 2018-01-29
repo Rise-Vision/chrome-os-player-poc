@@ -4,11 +4,11 @@ const program = require('commander');
 const fs = require("fs");
 
 const spawnSync = require("child_process").spawnSync;
-const credentialsPath = "private-keys/credentials.json";
+const credentialsPath = "private-keys/poc-credentials.json";
 function utf8() {return {encoding: "utf8"};}
 const credentials = JSON.parse(fs.readFileSync(credentialsPath, utf8()));
 const appId = process.env.CIRCLE_BRANCH === "master" ? credentials.production_app_id_no_restart : credentials.test_app_id;
-const manifestFilePath = "app/manifest.json";
+const manifestFilePath = "dist/manifest.json";
 
 program
   .version('0.0.1')
@@ -75,6 +75,6 @@ function publish() {
 
   console.log(chromeWebStorePublishRequest.stdout.toString());
   
-  process.exit(chromeWebStorePublishRequest.status == 200 ? 0 : 1);
+  process.exit(chromeWebStorePublishRequest.status);
 }
 

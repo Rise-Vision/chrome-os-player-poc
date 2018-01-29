@@ -5,10 +5,11 @@
   "main": "src/app.js",
   "scripts": {
     "build": "webpack",
-    "predist": "npm run build",
-    "dist": "rimraf dist && mkdir dist && zip dist/app.zip -r app",
-    "prepublish": "npm run dist && node deploy.js -i",
+    "predist": "npm run build && rimraf dist && mkdir dist && cp -r app/* dist",
+    "dist": "node deploy.js -i && zip dist/app.zip -r dist",
+    "prepublish": "npm run dist",
     "publish": "node deploy.js -p",
+    "postpublish": "rimraf dist",
     "watch": "webpack --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cd server && python -m SimpleHTTPServer 9000"
