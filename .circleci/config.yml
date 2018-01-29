@@ -26,7 +26,6 @@ jobs:
       - restore_cache:
           key: node-cache-v2{{ checksum "package.json" }}
       - run: git clone git@github.com:Rise-Vision/private-keys.git
-      - run: cp -rf ./private-keys/chrome-os-player/poc-credentials.js ./private-keys
       - run:
           name: Deploy
           command: npm run deploy
