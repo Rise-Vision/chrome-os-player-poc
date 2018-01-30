@@ -6,7 +6,7 @@ const FileSystem = {
 
     saveFile(name, contents) {
         return this.requestFileSystem()
-            .then(this.createDirectory)
+            .then(this.createDirectory.bind(this))
             .then((dir) => {
                 return this.createFile(dir, name);
             })
@@ -21,9 +21,37 @@ const FileSystem = {
         });
     },
 
-    createDirectory(fs, name = 'modules') {
+    getDirectory(fs, name = 'modules', create = false) {
         return new Promise((resolve, reject) => {
-            fs.root.getDirectory(name, {create: true}, resolve, reject);
+            fs.root.getDirectory(name, {create}, resolve, reject);
+        });
+    },
+
+    createDirectory(fs, name = 'modules') {
+        return this.getDirectory(fs, name, true);
+    },
+
+    listEntries() {
+        return this.requestFileSystem()
+            .then(this.getDirectory)
+            .then(this.readDirectoryEntries);
+    },
+
+    readDirectoryEntries(dir) {
+        return new Promise((resolve, reject) => {
+
+            const dirReader = dir.createReader();
+            function readEntriesRecursively(entries = []) {
+               dirReader.readEntries((results) => {
+                if (results.length > 0) {
+                    readEntriesRecursively([...entries, ...results]);
+                } else {
+                    resolve(entries.sort());
+                }
+              }, reject);
+            }
+
+            readEntriesRecursively();
         });
     },
 

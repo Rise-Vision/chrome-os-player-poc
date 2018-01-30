@@ -59,7 +59,13 @@ function installModules(modules) {
 
     return uninstallModules()
         .then(installModulesPromises)
-        .then(() => console.log(`all modules have been loaded from manifest ${JSON.stringify(modules)}`))
+        .then(FileSystem.listEntries.bind(FileSystem))
+        .then((entries) => {
+            console.log('All modules have been loaded from manifest:');
+            console.log(JSON.stringify(modules, null, 2));
+            console.log('Files:');
+            console.log(entries);
+        })
         .catch(error => console.error(error));
 }
 
