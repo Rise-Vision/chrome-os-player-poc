@@ -6,7 +6,7 @@ const FileSystem = {
 
     saveFile(name, contents) {
         return this.requestFileSystem()
-            .then(this.createDirectory.bind(this))
+            .then((fs) => this.createDirectory(fs))
             .then((dir) => {
                 return this.createFile(dir, name);
             })
