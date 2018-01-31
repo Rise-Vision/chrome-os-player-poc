@@ -63,18 +63,134 @@
 /******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
-/******/ ({
+/******/ ([
+/* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-/***/ 3:
-/***/ (function(module, exports) {
+"use strict";
+const FIFTY_GIG = 50 * 1024 * 1024 * 1024; // eslint-disable-line no-magic-numbers
+
+const FileSystem = {
+
+    initialSize: FIFTY_GIG,
+
+    saveFile(name, contents) {
+        return this.requestFileSystem()
+            .then((fs) => this.createDirectory(fs))
+            .then((dir) => {
+                return this.createFile(dir, name);
+            })
+            .then((fileEntry) => {
+                return this.writeFile(fileEntry, contents).then(() => fileEntry.toURL());
+            });
+    },
+
+    requestFileSystem() {
+        return new Promise((resolve, reject) => {
+            window.webkitRequestFileSystem(window.PERSISTENT, this.initialSize, resolve, reject);
+        });
+    },
+
+    getDirectory(fs, name = 'modules', create = false) {
+        return new Promise((resolve, reject) => {
+            fs.root.getDirectory(name, {create}, resolve, reject);
+        });
+    },
+
+    createDirectory(fs, name = 'modules') {
+        return this.getDirectory(fs, name, true);
+    },
+
+    listEntries() {
+        return this.requestFileSystem()
+            .then(this.getDirectory)
+            .then(this.readDirectoryEntries);
+    },
+
+    readDirectoryEntries(dir) {
+        return new Promise((resolve, reject) => {
+
+            const dirReader = dir.createReader();
+            function readEntriesRecursively(entries = []) {
+               dirReader.readEntries((results) => {
+                if (results.length > 0) {
+                    readEntriesRecursively([...entries, ...results]);
+                } else {
+                    resolve(entries.sort());
+                }
+              }, reject);
+            }
+
+            readEntriesRecursively();
+        });
+    },
+
+    createFile(dir, name) {
+        return new Promise((resolve, reject) => {
+            dir.getFile(name, {create: true}, resolve, reject);
+        });
+    },
+
+    writeFile(fileEntry, contents) {
+        return new Promise((resolve, reject) => {
+            fileEntry.createWriter((fileWriter) => {
+                processChunkedContents(contents, fileWriter).then(resolve).catch(reject);
+            });
+        });
+    }
+};
+
+function processChunkedContents(contents, fileWriter) {
+    const fileWriteableStream = new WritableStream({
+        write(chunk) {
+          return new Promise((resolve, reject) => {
+            fileWriter.onwriteend = resolve
+            fileWriter.onerror = reject
+            fileWriter.onprogress = (progress) => {
+                console.log(`File write progress type ${progress.type} loaded ${progress.loaded}, total: ${progress.total}`);
+            }
+            fileWriter.write(new Blob(chunk));
+          });
+        }
+      });
+    return contents.pipeTo(fileWriteableStream);
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (FileSystem);
+
+
+/***/ }),
+/* 1 */,
+/* 2 */,
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__filesystem__ = __webpack_require__(0);
+
+
+function testSavingLargeFiles() {
+    testSavingLargeFile('http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_stereo_abl.mp4', 'bbb_sunflower_1080p_60fps_stereo_abl.mp4');
+}
+
+function testSavingLargeFile(url, name) {
+    console.log(`Downloading ${url}`);
+    fetch(url)
+        .then((response) => {
+            console.log(`Saving file ${name}`);
+            return __WEBPACK_IMPORTED_MODULE_0__filesystem__["a" /* default */].saveFile(name, response.body);
+        })
+        .then((fileUrl) => console.log(`File ${name} saved with success ${fileUrl}`))
+        .catch(console.error);
+}
 
 function init() {
-    console.log("main");
+    testSavingLargeFiles();
 }
 
 document.addEventListener("DOMContentLoaded", init);
 
 
 /***/ })
-
-/******/ });
+/******/ ]);

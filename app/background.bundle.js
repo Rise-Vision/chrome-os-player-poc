@@ -60,143 +60,11 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__installer__ = __webpack_require__(1);
-
-
-function createHelloWorldWindow() {
-    // Center window on screen.
-    const screenWidth = screen.availWidth;
-    const screenHeight = screen.availHeight;
-    const width = 600;
-    const height = 500;
-
-    chrome.app.window.create('index.html', {
-      id: "helloWorldID",
-      outerBounds: {
-        width,
-        height,
-        left: Math.round((screenWidth - width) / 2),
-        top: Math.round((screenHeight - height) / 2)
-      }
-    });
-}
-
-function init() {
-    createHelloWorldWindow();
-
-    const modules = {
-        messaging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/messaging.js',
-        logging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/logging.js',
-        watchdog: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/watchdog.js',
-        displayControl: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/displayControl.js'
-    };
-
-    const channel = new BroadcastChannel('local-messaging-module');
-
-    __WEBPACK_IMPORTED_MODULE_0__installer__["a" /* default */].installModules(modules).then(() => {
-        channel.postMessage('App has started');
-    });
-
-    chrome.permissions.getAll((permissions) => {console.log(`permissions ${JSON.stringify(permissions)}`);});
-}
-
-chrome.app.runtime.onLaunched.addListener(init);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__filesystem__ = __webpack_require__(2);
-
-
-const installedModules = [];
-
-function saveModuleFile(name, response) {
-    return __WEBPACK_IMPORTED_MODULE_0__filesystem__["a" /* default */].saveFile(name, response.body);
-}
-
-function loadModuleScript(name, fileUrl) {
-    console.log(`Loading module script ${name} from ${fileUrl}`);
-
-    // return loadModuleAsScriptTag(name, fileUrl);
-    return loadModuleAsWorker(name, fileUrl);
-}
-
-function loadModuleAsWorker(name, fileUrl) {
-    const worker = new Worker(fileUrl);
-    worker.postMessage({from: 'installer', topic: 'startup'});
-    worker.addEventListener('message', handleWorkerMessage)
-    installedModules.push(worker);
-    return name;
-}
-
-function handleWorkerMessage(message) {
-    console.log(`Message received ${JSON.stringify(message.data)}`);
-}
-
-function loadModuleAsScriptTag(name, fileUrl) {
-    const script = document.createElement('script');
-    script.onload = function() {
-        console.log(`Module ${name} has been loaded`);
-    };
-    script.src = fileUrl;
-
-    document.head.appendChild(script);
-
-    return name;
-}
-
-function uninstallModules() {
-    installedModules.forEach(worker => {
-        worker.terminate();
-    });
-    return Promise.resolve();
-}
-
-function initModule(name, url) {
-    return fetch(url)
-        .then(response => saveModuleFile(name, response))
-        .then(fileUrl => loadModuleScript(name, fileUrl))
-}
-
-function installModules(modules) {
-    const funcs = Object.keys(modules).map(moduleName => () => initModule(`${moduleName}.js`, modules[moduleName]))
-    const installModulesPromises = serialPromises(funcs);
-
-    return uninstallModules()
-        .then(installModulesPromises)
-        .then(() => __WEBPACK_IMPORTED_MODULE_0__filesystem__["a" /* default */].listEntries())
-        .then((entries) => {
-            console.log('All modules have been loaded from manifest:');
-            console.log(JSON.stringify(modules, null, 2));
-            console.log('Files:');
-            console.log(entries);
-        })
-        .catch(console.error);
-}
-
-function serialPromises(funcs) {
-    return funcs.reduce((promise, func) => promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]));
-}
-
-const Installer = {installModules}
-
-/* harmony default export */ __webpack_exports__["a"] = (Installer);
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -289,6 +157,138 @@ function processChunkedContents(contents, fileWriter) {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (FileSystem);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__installer__ = __webpack_require__(2);
+
+
+function createHelloWorldWindow() {
+    // Center window on screen.
+    const screenWidth = screen.availWidth;
+    const screenHeight = screen.availHeight;
+    const width = 600;
+    const height = 500;
+
+    chrome.app.window.create('index.html', {
+      id: "helloWorldID",
+      outerBounds: {
+        width,
+        height,
+        left: Math.round((screenWidth - width) / 2),
+        top: Math.round((screenHeight - height) / 2)
+      }
+    });
+}
+
+function init() {
+    createHelloWorldWindow();
+
+    const modules = {
+        messaging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/messaging.js',
+        logging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/logging.js',
+        watchdog: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/watchdog.js',
+        displayControl: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/displayControl.js'
+    };
+
+    const channel = new BroadcastChannel('local-messaging-module');
+
+    __WEBPACK_IMPORTED_MODULE_0__installer__["a" /* default */].installModules(modules).then(() => {
+        channel.postMessage('App has started');
+    });
+
+    chrome.permissions.getAll((permissions) => {console.log(`permissions ${JSON.stringify(permissions)}`);});
+}
+
+chrome.app.runtime.onLaunched.addListener(init);
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__filesystem__ = __webpack_require__(0);
+
+
+const installedModules = [];
+
+function saveModuleFile(name, response) {
+    return __WEBPACK_IMPORTED_MODULE_0__filesystem__["a" /* default */].saveFile(name, response.body);
+}
+
+function loadModuleScript(name, fileUrl) {
+    console.log(`Loading module script ${name} from ${fileUrl}`);
+
+    // return loadModuleAsScriptTag(name, fileUrl);
+    return loadModuleAsWorker(name, fileUrl);
+}
+
+function loadModuleAsWorker(name, fileUrl) {
+    const worker = new Worker(fileUrl);
+    worker.postMessage({from: 'installer', topic: 'startup'});
+    worker.addEventListener('message', handleWorkerMessage)
+    installedModules.push(worker);
+    return name;
+}
+
+function handleWorkerMessage(message) {
+    console.log(`Message received ${JSON.stringify(message.data)}`);
+}
+
+function loadModuleAsScriptTag(name, fileUrl) {
+    const script = document.createElement('script');
+    script.onload = function() {
+        console.log(`Module ${name} has been loaded`);
+    };
+    script.src = fileUrl;
+
+    document.head.appendChild(script);
+
+    return name;
+}
+
+function uninstallModules() {
+    installedModules.forEach(worker => {
+        worker.terminate();
+    });
+    return Promise.resolve();
+}
+
+function initModule(name, url) {
+    return fetch(url)
+        .then(response => saveModuleFile(name, response))
+        .then(fileUrl => loadModuleScript(name, fileUrl))
+}
+
+function installModules(modules) {
+    const funcs = Object.keys(modules).map(moduleName => () => initModule(`${moduleName}.js`, modules[moduleName]))
+    const installModulesPromises = serialPromises(funcs);
+
+    return uninstallModules()
+        .then(installModulesPromises)
+        .then(() => __WEBPACK_IMPORTED_MODULE_0__filesystem__["a" /* default */].listEntries())
+        .then((entries) => {
+            console.log('All modules have been loaded from manifest:');
+            console.log(JSON.stringify(modules, null, 2));
+            console.log('Files:');
+            console.log(entries);
+        })
+        .catch(console.error);
+}
+
+function serialPromises(funcs) {
+    return funcs.reduce((promise, func) => promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]));
+}
+
+const Installer = {installModules}
+
+/* harmony default export */ __webpack_exports__["a"] = (Installer);
 
 
 /***/ })
