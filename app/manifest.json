@@ -24,7 +24,7 @@
   "app": {
     "background": {
       "scripts": [
-        "main.js"
+        "background.bundle.js"
       ]
     }
   },
