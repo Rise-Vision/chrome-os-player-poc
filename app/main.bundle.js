@@ -74,9 +74,9 @@ const FileSystem = {
 
     initialSize: FIFTY_GIG,
 
-    saveFile(name, contents) {
+    saveFile(name, contents, dirName = 'modules') {
         return this.requestFileSystem()
-            .then((fs) => this.createDirectory(fs))
+            .then((fs) => this.createDirectory(fs, dirName))
             .then((dir) => {
                 return this.createFile(dir, name);
             })
@@ -101,9 +101,9 @@ const FileSystem = {
         return this.getDirectory(fs, name, true);
     },
 
-    listEntries() {
+    listEntries(dirName = 'modules') {
         return this.requestFileSystem()
-            .then(this.getDirectory)
+            .then((fs) => this.getDirectory(fs, dirName, true))
             .then(this.readDirectoryEntries);
     },
 
@@ -172,8 +172,22 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 let output = null;
 
-function testSavingLargeFiles() {
-    testSavingLargeFile('http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_stereo_abl.mp4', 'bbb_sunflower_1080p_60fps_stereo_abl.mp4');
+const dirName = 'large-files';
+
+function readLargeFilesDir() {
+    return __WEBPACK_IMPORTED_MODULE_0__filesystem__["a" /* default */].listEntries(dirName)
+        .then((entries) => {
+            writeToOutput('Existing files:');
+            const names = entries.map(entry => entry.name);
+            names.forEach(name => writeToOutput(name));
+            return names;
+        });
+}
+
+function testSavingLargeFiles(existingFiles) {
+    if (existingFiles.indexOf('bbb_sunflower_1080p_60fps_stereo_abl.mp4') < 0) {
+        testSavingLargeFile('http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_stereo_abl.mp4', 'bbb_sunflower_1080p_60fps_stereo_abl.mp4');
+    }
 }
 
 function writeToOutput(text) {
@@ -188,7 +202,7 @@ function testSavingLargeFile(url, name) {
     fetch(url)
         .then((response) => {
             writeToOutput(`Saving file ${name}`);
-            return __WEBPACK_IMPORTED_MODULE_0__filesystem__["a" /* default */].saveFile(name, response.body);
+            return __WEBPACK_IMPORTED_MODULE_0__filesystem__["a" /* default */].saveFile(name, response.body, dirName);
         })
         .then((fileUrl) => writeToOutput(`File ${name} saved with success ${fileUrl}`))
         .catch((error) => {
@@ -199,7 +213,8 @@ function testSavingLargeFile(url, name) {
 
 function init() {
     output = document.querySelector('output');
-    testSavingLargeFiles();
+    readLargeFilesDir()
+        .then(testSavingLargeFiles);
 }
 
 document.addEventListener("DOMContentLoaded", init);

@@ -4,9 +4,9 @@ const FileSystem = {
 
     initialSize: FIFTY_GIG,
 
-    saveFile(name, contents) {
+    saveFile(name, contents, dirName = 'modules') {
         return this.requestFileSystem()
-            .then((fs) => this.createDirectory(fs))
+            .then((fs) => this.createDirectory(fs, dirName))
             .then((dir) => {
                 return this.createFile(dir, name);
             })
@@ -31,9 +31,9 @@ const FileSystem = {
         return this.getDirectory(fs, name, true);
     },
 
-    listEntries() {
+    listEntries(dirName = 'modules') {
         return this.requestFileSystem()
-            .then(this.getDirectory)
+            .then((fs) => this.getDirectory(fs, dirName, true))
             .then(this.readDirectoryEntries);
     },
 
