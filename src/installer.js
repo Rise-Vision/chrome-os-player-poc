@@ -3,10 +3,7 @@ import FileSystem from './filesystem'
 const installedModules = [];
 
 function saveModuleFile(name, response) {
-    return response.blob().then((blob) => {
-        console.log(`Blob read from module ${name} response`);
-        return FileSystem.saveFile(name, blob);
-    });
+    return FileSystem.saveFile(name, response.body);
 }
 
 function loadModuleScript(name, fileUrl) {

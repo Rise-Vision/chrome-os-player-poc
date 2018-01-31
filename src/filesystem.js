@@ -64,40 +64,26 @@ const FileSystem = {
     writeFile(fileEntry, contents) {
         return new Promise((resolve, reject) => {
             fileEntry.createWriter((fileWriter) => {
-
-                fileWriter.onwriteend = resolve
-                fileWriter.onerror = reject
-                fileWriter.onprogress = (progress) => {
-                    console.log(`File write progress type ${progress.type} loaded ${progress.loaded}, total: ${progress.total}`);
-                }
-                fileWriter.write(contents);
-
-                // return processChunkedContents(contents, fileWriter);
+                processChunkedContents(contents, fileWriter).then(resolve).catch(reject);
             });
         });
     }
 };
 
-// TODO Test this with large files
 function processChunkedContents(contents, fileWriter) {
-    const reader = contents.getReader()
-    return readChunk();
-  
-    function readChunk() {
-      return reader.read().then(writeChunks);
-    }
-  
-    function writeChunks({ value, done }) {
-        return new Promise((resolve, reject) => {
-            if (done) {
-                console.log('returning')
-                return resolve();
+    const fileWriteableStream = new WritableStream({
+        write(chunk) {
+          return new Promise((resolve, reject) => {
+            fileWriter.onwriteend = resolve
+            fileWriter.onerror = reject
+            fileWriter.onprogress = (progress) => {
+                console.log(`File write progress type ${progress.type} loaded ${progress.loaded}, total: ${progress.total}`);
             }
-
-            fileWriter.onwriteend = readChunk;
-            fileWriter.write(new Blob(value));
-        });
-    }
+            fileWriter.write(new Blob(chunk));
+          });
+        }
+      });
+    return contents.pipeTo(fileWriteableStream);
 }
 
 export default FileSystem;
