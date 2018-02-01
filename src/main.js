@@ -15,9 +15,14 @@ function readLargeFilesDir() {
 }
 
 function testSavingLargeFiles(existingFiles) {
-    if (existingFiles.indexOf('bbb_sunflower_1080p_60fps_stereo_abl.mp4') < 0) {
-        testSavingLargeFile('http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_60fps_stereo_abl.mp4', 'bbb_sunflower_1080p_60fps_stereo_abl.mp4');
-    }
+    const files = ['ten_mega.png', 'fifty_mega.mp4', 'one_hundred_mega.webm', 'one_and_a_half_gig.mp4'];
+    const baseUrl = 'https://storage.googleapis.com/rise-andre/';
+
+    files.forEach((file) => {
+        if (existingFiles.indexOf(file) < 0) {
+            testSavingLargeFile(`${baseUrl}${file}`, file);
+        }
+    });
 }
 
 function writeToOutput(text) {
@@ -43,8 +48,7 @@ function testSavingLargeFile(url, name) {
 
 function init() {
     output = document.querySelector('output');
-    readLargeFilesDir()
-        .then(testSavingLargeFiles);
+    readLargeFilesDir().then(testSavingLargeFiles);
 }
 
 document.addEventListener("DOMContentLoaded", init);
