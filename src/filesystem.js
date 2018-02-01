@@ -2,6 +2,8 @@ const FIFTY_GIG = 50 * 1024 * 1024 * 1024; // eslint-disable-line no-magic-numbe
 
 const FileSystem = {
 
+    kioskMode: false,
+
     initialSize: FIFTY_GIG,
 
     saveFile(name, contents, dirName = 'modules') {
@@ -16,9 +18,60 @@ const FileSystem = {
     },
 
     requestFileSystem() {
+        if (this.fs) {
+            return Promise.resolve(this.fs);
+        }
+
+        const setFs = (fs) => {
+            this.fs = fs;
+            return fs;
+        };
+
+        if (this.kioskMode) {
+            return this.requestChromeFileSystem().then(setFs);
+        }
+        return this.requestWebkitFileSystem().then(setFs);
+    },
+
+    requestWebkitFileSystem() {
         return new Promise((resolve, reject) => {
             window.webkitRequestFileSystem(window.PERSISTENT, this.initialSize, resolve, reject);
         });
+    },
+
+    requestChromeFileSystem() {
+        function getWritableVolume() {
+            return new Promise((resolve, reject) => {
+                chrome.fileSystem.getVolumeList((volumes) => {
+                    if (!volumes) {
+                        console.log('Error getting volume list');
+                        return reject(chrome.runtime.lastError);
+                    }
+
+                    const writableVolume = volumes.find(volume => volume.writable);
+                    if (!writableVolume) {
+                        console.log('No writable volume was found');
+                        return reject(new Error('No writable volume was found'));
+                    }
+
+                    resolve(writableVolume);
+                });
+            });
+        }
+
+        function getFileSystem(volume) {
+            return new Promise((resolve, reject) => {
+                chrome.fileSystem.requestFileSystem(volume, (fs) => {
+                    if (!fs) {
+                        console.log('Error requesting filesystem');
+                        return reject(chrome.runtime.lastError);
+                    }
+                    resolve(fs);
+                });
+            });
+        }
+
+        return getWritableVolume().then(getFileSystem);
     },
 
     getDirectory(fs, name = 'modules', create = false) {

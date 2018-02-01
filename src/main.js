@@ -102,7 +102,13 @@ function testSavingLargeFile(url, name) {
 
 function init() {
     output = document.querySelector('output');
-    readLargeFilesDir().then(testSavingLargeFiles);
+
+    chrome.storage.local.get("launchData", ({launchData}) => {
+        console.log(launchData);
+        FileSystem.kioskMode = launchData.isKioskSession;
+
+        readLargeFilesDir().then(testSavingLargeFiles);
+    });
 }
 
 document.addEventListener("DOMContentLoaded", init);
