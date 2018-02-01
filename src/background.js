@@ -23,7 +23,7 @@ function init(launchData) {
     console.log(launchData);
     chrome.storage.local.set({launchData});
 
-    FileSystem.kioskMode = launchData.isKioskSession;
+    // FileSystem.kioskMode = launchData.isKioskSession;
 
     createHelloWorldWindow();
 
