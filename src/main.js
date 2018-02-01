@@ -7,11 +7,65 @@ const dirName = 'large-files';
 function readLargeFilesDir() {
     return FileSystem.listEntries(dirName)
         .then((entries) => {
-            writeToOutput('Existing files:');
-            const names = entries.map(entry => entry.name);
-            names.forEach(name => writeToOutput(name));
-            return names;
+            const list = document.getElementById('files');
+            entries.forEach(entry => {
+                console.log(entry);
+                entry.file((file) => {
+                    const item = document.createElement('li');
+                    const itemText = `${file.name}, ${file.type}, ${humanFileSize(file.size)}, ${file.lastModifiedDate}`;
+                    if (file.type.startsWith('image') || file.type.startsWith('video')) {
+                        item.innerHTML = `<a href="${entry.toURL()}" data-src="${entry.toURL()}" data-type="${file.type}">${itemText}</a>`;
+                        item.addEventListener('click', openLink);
+                    } else {
+                        item.textContent = `${file.name}, ${file.type}, ${humanFileSize(file.size)}, ${file.lastModifiedDate}`
+                    }
+                    list.appendChild(item);
+                });
+            });
+            return entries.map(entry => entry.name);
         });
+}
+
+function humanFileSize(fileBytes) {
+    let bytes = fileBytes;
+    const thresh = 1024;
+    if (Math.abs(bytes) < thresh) {
+        return `${bytes} B`;
+    }
+    const units = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    let u = -1;
+    do {
+        bytes /= thresh;
+        ++u;
+    } while (Math.abs(bytes) >= thresh && u < units.length - 1);
+    return `${bytes.toFixed(1)} ${units[u]}`;
+}
+
+function openLink(e) {
+    if (!e.target.hasAttribute('data-src') || !e.target.hasAttribute('data-type')) {
+        return;
+    }
+    e.preventDefault();
+    const url = e.target.getAttribute('data-src');
+    const type = e.target.getAttribute('data-type');
+    chrome.app.window.create(
+        'webview.html',
+        {hidden: true},
+        (appWin) => {
+            appWin.contentWindow.addEventListener('DOMContentLoaded', (e) => {
+                let tag = 'p';
+                if (type.startsWith('image')) {
+                    tag = 'img';
+                } else if (type.startsWith('video')) {
+                    tag = 'video';
+                }
+                const element = appWin.contentWindow.document.createElement(tag);
+                element.src = url;
+                appWin.contentWindow.document.body.appendChild(element);
+                appWin.show();
+            }
+        );
+    });
 }
 
 function testSavingLargeFiles(existingFiles) {

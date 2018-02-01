@@ -14,7 +14,8 @@
     "system.memory",
     "system.storage",
     "system.display",
-    "serial"
+    "serial",
+    "webview"
   ],
   "minimum_chrome_version": "52",
   "icons": {
