@@ -8,14 +8,15 @@
     "https://apis.google.com/",
     "https://www.googleapis.com/",
     "https://storage.googleapis.com/",
-    "fileSystem",
+    {"fileSystem": ["write", "retainEntries", "directory", "requestFileSystem"]},
     "unlimitedStorage",
     "system.cpu",
     "system.memory",
     "system.storage",
     "system.display",
     "serial",
-    "webview"
+    "webview",
+    "storage"
   ],
   "minimum_chrome_version": "52",
   "icons": {
@@ -31,5 +32,5 @@
     }
   },
   "kiosk_enabled": true,
-  "kiosk_only": false
+  "kiosk_only": true
 }

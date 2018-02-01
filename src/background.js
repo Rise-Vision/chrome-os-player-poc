@@ -1,3 +1,4 @@
+import FileSystem from './filesystem'
 import Installer from './installer'
 
 function createHelloWorldWindow() {
@@ -18,7 +19,12 @@ function createHelloWorldWindow() {
     });
 }
 
-function init() {
+function init(launchData) {
+    console.log(launchData);
+    chrome.storage.local.set({launchData});
+
+    FileSystem.kioskMode = launchData.isKioskSession;
+
     createHelloWorldWindow();
 
     const modules = {
