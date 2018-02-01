@@ -71,18 +71,20 @@ const FileSystem = {
 };
 
 function processChunkedContents(contents, fileWriter) {
+    fileWriter.onprogress = (progress) => {
+        console.log(`File write progress type ${progress.type} loaded ${progress.loaded}, total: ${progress.total}`);
+    };
+
     const fileWriteableStream = new WritableStream({
         write(chunk) {
-          return new Promise((resolve, reject) => {
-            fileWriter.onwriteend = resolve
-            fileWriter.onerror = reject
-            fileWriter.onprogress = (progress) => {
-                console.log(`File write progress type ${progress.type} loaded ${progress.loaded}, total: ${progress.total}`);
-            }
-            fileWriter.write(new Blob(chunk));
-          });
+            return new Promise((resolve, reject) => {
+                fileWriter.seek(fileWriter.length);
+                fileWriter.onwriteend = resolve
+                fileWriter.onerror = reject
+                fileWriter.write(new Blob([chunk]));
+            });
         }
-      });
+    });
     return contents.pipeTo(fileWriteableStream);
 }
 
