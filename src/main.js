@@ -69,7 +69,8 @@ function openLink(e) {
 }
 
 function testSavingLargeFiles(existingFiles) {
-    const files = ['ten_mega.png', 'fifty_mega.mp4', 'one_hundred_mega.webm', 'one_and_a_half_gig.mp4'];
+    // const files = ['ten_mega.png', 'fifty_mega.mp4', 'one_hundred_mega.webm', 'one_and_a_half_gig.mp4'];
+    const files = ['ten_mega.png', 'fifty_mega.mp4'];
     const baseUrl = 'https://storage.googleapis.com/rise-andre/';
 
     files.forEach((file) => {
@@ -100,8 +101,53 @@ function testSavingLargeFile(url, name) {
         });
 }
 
+function launchViewer(event) {
+    const displayIdInput = document.getElementById('displayId');
+    const displayId = displayIdInput.value;
+    if (!displayId) {
+        return;
+    }
+
+    event.preventDefault();
+
+    getWindowOptions().then((windowOptions) => {
+        const viewerUrl = `http://rvashow.appspot.com/Viewer.html?player=true&type=display&id=${displayId}`;
+        chrome.app.window.create(
+            'viewer.html',
+            {id: 'viewer', hidden: true, state: 'maximized', innerBounds: windowOptions},
+            (appWin) => {
+                appWin.contentWindow.addEventListener('DOMContentLoaded', () => {
+                    const webview = appWin.contentWindow.document.querySelector('webview');
+                    webview.style.height = `${windowOptions.height}px`;
+                    webview.style.width = '100%';
+                    webview.src = viewerUrl;
+                    appWin.show();
+                }
+            );
+        });
+    });   
+}
+
+function getWindowOptions() {
+    return new Promise((resolve) => {
+        chrome.system.display.getInfo((displays) => {
+            const windowOptions = {};
+            displays.forEach((display) => {
+                if (display.bounds.left === 0 && display.bounds.top === 0) {
+                    windowOptions.width = display.bounds.width;
+                    windowOptions.height = display.bounds.height;
+                }
+            });
+            resolve(windowOptions);
+        });
+    });
+}
+
 function init() {
     output = document.querySelector('output');
+
+    const launchViewerButton = document.getElementById('launchViewer');
+    launchViewerButton.addEventListener('click', launchViewer);
 
     chrome.storage.local.get("launchData", ({launchData}) => {
         console.log(launchData);
