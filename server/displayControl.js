@@ -1,11 +1,9 @@
-console.log("Someday I'll be the display control module");
-
-const moduleName = 'display-control';
+const moduleName = 'displayControl';
 let displayId = null;
 
 self.onmessage = (event) => {
     const message = event.data;
-    console.log(`Display control module received message: ${JSON.stringify(message)}`);
+    console.log(`${moduleName} - received message: ${JSON.stringify(message)}`);
     if (message.from === 'installer' && message.topic === 'startup') {
         displayId = message.displayId;
         run();
@@ -25,5 +23,6 @@ function sendWatchMessage() {
 }
 
 function run() {
+    console.log(`${moduleName} - started`);
     sendWatchMessage();
 }
