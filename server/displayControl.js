@@ -25,4 +25,13 @@ function sendWatchMessage() {
 function run() {
     console.log(`${moduleName} - started`);
     sendWatchMessage();
+    logExternal('started');
+}
+
+function logExternal(event) {
+    self.postMessage({
+        from: moduleName,
+        topic: "log",
+        data: {event}
+    });
 }

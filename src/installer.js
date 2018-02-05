@@ -12,6 +12,9 @@ class RemoteModule {
         this.worker = worker;
         this.messagingClient = messagingClient;
         this.worker.addEventListener('message', this.handleWorkerMessage.bind(this));
+        this.messagingClient.receiveMessages((receiver) => {
+            receiver.on('message', this.handleLocalMessage.bind(this));
+        });
     }
 
     postMessage(message) {
@@ -24,8 +27,15 @@ class RemoteModule {
     }
 
     handleWorkerMessage(message) {
-        console.log(`${this.constructor.name} - Message received from ${this.name} - ${JSON.stringify(message.data)}`);
+        console.log(`${this.constructor.name} ${this.name} - Handling worker message - ${JSON.stringify(message.data)}`);
         this.messagingClient.broadcastMessage(message.data);
+    }
+
+    handleLocalMessage(message) {
+        console.log(`${this.constructor.name} ${this.name} - Handling local message - ${JSON.stringify(message.data)}`);
+        if (message.from !== this.name) {
+            this.worker.postMessage(message);
+        }
     }
 }
 

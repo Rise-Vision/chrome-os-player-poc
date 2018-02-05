@@ -32,7 +32,7 @@ class MessagingClient {
         const receiver = new EventEmitter();
         this.bus.on('message', (message) => {
             console.log(`${this.constructor.name} ${this.moduleName} - got a message: ${JSON.stringify(message)}`);
-            receiver.emit("message", message);
+            receiver.emit('message', message);
         });
         return receiver;
     }
@@ -60,10 +60,7 @@ class Messaging {
     }
 
     broadcastMessage(message) {
-        console.log(`${this.constructor.name} - broadcastMessage(${message})`);
-        this.clientList.forEach((client) => {
-            client.broadcastMessage(message);
-        });
+        this.bus.emit(message);
         return Promise.resolve();
     }
 
