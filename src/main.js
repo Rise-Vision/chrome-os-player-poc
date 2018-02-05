@@ -54,7 +54,7 @@ function openLink(e) {
         'webview.html',
         {hidden: true},
         (appWin) => {
-            appWin.contentWindow.addEventListener('DOMContentLoaded', (e) => {
+            appWin.contentWindow.addEventListener('DOMContentLoaded', () => {
                 let tag = 'p';
                 if (type.startsWith('image')) {
                     tag = 'img';
