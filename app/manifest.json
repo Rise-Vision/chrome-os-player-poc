@@ -31,6 +31,19 @@
       ]
     }
   },
+  "sockets": {
+    "udp": {
+      "send": [""],
+      "bind": [""],
+      "multicastMembership": ""
+    },
+    "tcp": {
+      "connect": [""]
+    },
+    "tcpServer": {
+      "listen": ["*:*"]
+    }
+ },
   "kiosk_enabled": true,
-  "kiosk_only": true
+  "kiosk_only": false
 }

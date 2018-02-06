@@ -1,5 +1,6 @@
 import FileSystem from './filesystem';
 import MSConnection from './ms-connection';
+import WSC from './lib/wsc-chrome.min';
 
 let output = null;
 
@@ -186,6 +187,26 @@ function init() {
             testAvailableDiskSpace();
         });
     });
+
+    startWebServer();
+}
+
+function startWebServer() {
+    FileSystem.requestFileSystem()
+        .then(fs => FileSystem.getDirectory(fs, dirName, true))
+        .then((dirEntry) => {
+            const options = {
+                entry: dirEntry,
+                renderIndex: false,
+                optBackground: false,
+                optAutoStart: false,
+                port: 8080
+            };
+            const server = new WSC.WebApplication(options);
+            server.start(() => {
+                console.log('Webserver started');
+            });
+        });
 }
 
 document.addEventListener("DOMContentLoaded", init);
