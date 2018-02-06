@@ -70,9 +70,7 @@ function openLink(e) {
 }
 
 function testSavingLargeFiles(existingFiles) {
-    // const files = ['ten_mega.png', 'fifty_mega.mp4', 'one_hundred_mega.webm', 'one_and_a_half_gig.mp4'];
-    // const files = ['ten_mega.png', 'fifty_mega.mp4'];
-    const files = [];
+    const files = ['ten_mega.png', 'fifty_mega.mp4', 'one_hundred_mega.webm', 'one_and_a_half_gig.mp4'];
     const baseUrl = 'https://storage.googleapis.com/rise-andre/';
 
     files.forEach((file) => {
@@ -176,11 +174,14 @@ function init() {
     const launchViewerButton = document.getElementById('launchViewer');
     launchViewerButton.addEventListener('click', launchViewer);
 
+    const testLargeFilesButton = document.getElementById('testLargeFiles');
+    testLargeFilesButton.addEventListener('click', () => {readLargeFilesDir().then(testSavingLargeFiles)});
+
     chrome.storage.local.get("launchData", ({launchData}) => {
         console.log(launchData);
         // FileSystem.kioskMode = launchData.isKioskSession;
 
-        readLargeFilesDir().then(testSavingLargeFiles).then(()=>{
+        readLargeFilesDir().then(() => {
             // testMSClientSocket();
             testAvailableDiskSpace();
         });
