@@ -1,4 +1,5 @@
-import FileSystem from './filesystem'
+import FileSystem from './filesystem';
+import MSConnection from './ms-connection';
 
 let output = null;
 
@@ -70,7 +71,8 @@ function openLink(e) {
 
 function testSavingLargeFiles(existingFiles) {
     // const files = ['ten_mega.png', 'fifty_mega.mp4', 'one_hundred_mega.webm', 'one_and_a_half_gig.mp4'];
-    const files = ['ten_mega.png', 'fifty_mega.mp4'];
+    // const files = ['ten_mega.png', 'fifty_mega.mp4'];
+    const files = [];
     const baseUrl = 'https://storage.googleapis.com/rise-andre/';
 
     files.forEach((file) => {
@@ -125,7 +127,7 @@ function launchViewer(event) {
                 }
             );
         });
-    });   
+    });
 }
 
 function getWindowOptions() {
@@ -143,6 +145,21 @@ function getWindowOptions() {
     });
 }
 
+function testMSClientSocket() {
+    MSConnection.init()
+        .then(()=>{
+            if (MSConnection.canConnect()) {
+                // request a Messaging Service update on test file
+                MSConnection.write({
+                    from: "test-client",
+                    filePath: "local-storage-test/test-1x1.png",
+                    topic: "WATCH",
+                    version: "0"
+                });
+            }
+        })
+}
+
 function init() {
     output = document.querySelector('output');
 
@@ -153,7 +170,7 @@ function init() {
         console.log(launchData);
         // FileSystem.kioskMode = launchData.isKioskSession;
 
-        readLargeFilesDir().then(testSavingLargeFiles);
+        readLargeFilesDir().then(testSavingLargeFiles).then(()=>{testMSClientSocket();});
     });
 }
 
