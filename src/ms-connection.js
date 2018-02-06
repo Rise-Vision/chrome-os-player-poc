@@ -1,4 +1,4 @@
-import PrimusMS from "./primus-ms";
+import PrimusMS from "./lib/primus-ms";
 
 const INITIAL_CONNECTION_TIMEOUT = 20 * 1000;
 const MSConnection = {};
