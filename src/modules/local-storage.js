@@ -1,8 +1,8 @@
-import Messaging from '../messaging'
+import messaging from '../messaging'
 
 export default class LocalStorageModule {
     init() {
-        return Messaging.receiveMessages('localStorage').then(receiver => {
+        return messaging.receiveMessages('localStorage').then(receiver => {
             receiver.on('message', this.handleMessage.bind(this));
         })
     }

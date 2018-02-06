@@ -12,9 +12,6 @@ class RemoteModule {
         this.worker = worker;
         this.messagingClient = messagingClient;
         this.worker.addEventListener('message', this.handleWorkerMessage.bind(this));
-        this.messagingClient.receiveMessages((receiver) => {
-            receiver.on('message', this.handleLocalMessage.bind(this));
-        });
     }
 
     postMessage(message) {
@@ -53,7 +50,9 @@ function loadModuleScript(name, fileUrl) {
 function loadModuleAsWorker(name, fileUrl) {
     const worker = new Worker(fileUrl);
     return messaging.connect(name).then((client) => {
-        remoteModules.push(new RemoteModule(name, worker, client));
+        const module = new RemoteModule(name, worker, client);
+        remoteModules.push(module);
+        client.receiveMessages().on('message', module.handleLocalMessage.bind(module));
         return name;
     });
 }
@@ -70,11 +69,17 @@ function loadModuleAsScriptTag(name, fileUrl) {
     return name;
 }
 
-function uninstallModules() {
+function shutdownRemoteModules() {
     remoteModules.forEach(module => {
         module.shutdown();
     });
     return Promise.resolve();
+}
+
+function uninstallModules() {
+    return shutdownRemoteModules().then(() => {
+        return FileSystem.removeDirectory('modules');
+    });
 }
 
 function initModule(name, url) {

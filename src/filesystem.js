@@ -84,6 +84,17 @@ const FileSystem = {
         return this.getDirectory(fs, name, true);
     },
 
+    removeDirectory(name) {
+        return this.requestFileSystem()
+            .then((fs) => this.getDirectory(fs, name))
+            .then((dirEntry) => {
+                return new Promise((resolve, reject) => {
+                    dirEntry.removeRecursively(resolve, reject);
+                });
+            })
+            .catch(() => Promise.resolve());
+    },
+
     listEntries(dirName = 'modules') {
         return this.requestFileSystem()
             .then((fs) => this.getDirectory(fs, dirName, true))

@@ -31,7 +31,8 @@ function init(launchData) {
         messaging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/messaging.js',
         logging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/logging.js',
         watchdog: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/watchdog.js',
-        displayControl: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/displayControl.js'
+        displayControl: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/displayControl.js',
+        twitter: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/twitter.js'
     };
 
     const channel = new BroadcastChannel('local-messaging-module');
