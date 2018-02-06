@@ -160,6 +160,16 @@ function testMSClientSocket() {
         })
 }
 
+function testAvailableDiskSpace() {
+    FileSystem.getAvailableDiskSpace((usedBytes, grantedBytes, err)=>{
+        if (err) {
+           console.log(`Error: ${err}`);
+           return;
+        }
+        writeToOutput(`App is using ${FileSystem.bytesToSize(usedBytes)} of ${FileSystem.bytesToSize(grantedBytes)} available disk space`);
+    });
+}
+
 function init() {
     output = document.querySelector('output');
 
@@ -170,7 +180,10 @@ function init() {
         console.log(launchData);
         // FileSystem.kioskMode = launchData.isKioskSession;
 
-        readLargeFilesDir().then(testSavingLargeFiles).then(()=>{testMSClientSocket();});
+        readLargeFilesDir().then(testSavingLargeFiles).then(()=>{
+            // testMSClientSocket();
+            testAvailableDiskSpace();
+        });
     });
 }
 
