@@ -1,4 +1,4 @@
-const moduleName = 'displayControl';
+const moduleName = 'twitter';
 let displayId = null;
 
 self.onmessage = (event) => {
@@ -7,24 +7,28 @@ self.onmessage = (event) => {
     if (message.from === 'installer' && message.topic === 'startup') {
         displayId = message.displayId;
         run();
+    } else {
+        handleMessage(message);
     }
 }
 
-function sendWatchMessage() {
-    const filesToWatch = ['screen-control.txt', 'content.json'];
-    filesToWatch.forEach(name => {
-        const filePath = `risevision-display-notifications/${displayId}/${name}`;
+function handleMessage(message) {
+    console.log(`${moduleName} - handleMessage ${JSON.stringify(message)}`);
+}
+
+function sendTweets() {
+    setInterval(() => {
         self.postMessage({
             from: moduleName,
-            topic: "watch",
-            filePath
+            topic: "twitter-update",
+            data: {id: 1234, text: "blabla"}
         });
-    });
+    }, 4000);
 }
 
 function run() {
     console.log(`${moduleName} - started`);
-    sendWatchMessage();
+    sendTweets();
     logExternal('started');
 }
 
