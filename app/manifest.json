@@ -45,5 +45,8 @@
     }
  },
   "kiosk_enabled": true,
-  "kiosk_only": false
+  "kiosk_only": false,
+  "kiosk": {
+    "required_platform_version": "10032.86.0"
+  }
 }
