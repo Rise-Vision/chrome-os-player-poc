@@ -1,0 +1,82 @@
+/* =========================================================================
+   CSS Reset
+   ========================================================================== */
+
+/*! normalize.css v3.0.1 | MIT License | git.io/normalize */
+
+/**
+ * 1. Set default font family to sans-serif.
+ * 2. Prevent iOS text size adjust after orientation change,
+ *    without disabling user zoom.
+ */
+
+html {
+  /* Visual */
+  font-family: sans-serif; /* 1 */
+  -ms-text-size-adjust: 100%; /* 2 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+
+/**
+ * Remove default margin.
+ */
+body {
+  /* Display & Box Model */
+  margin: 0;
+}
+
+/* =========================================================================
+Custom Styling
+========================================================================== */
+
+body {
+  /* Visual */
+  background-color: transparent;
+}
+
+#container {
+  /* Positioning */
+  position: relative;
+
+  /* Display & Box Model */
+  height: 0;
+  overflow: hidden;
+}
+#container iframe {
+  /* Positioning */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+
+  /* Display & Box Model */
+  width: 100%;
+  height: 100%;
+}
+
+#container .blocker {
+  /* Positioning */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+
+  /* Display & Box Model */
+  width: 100%;
+  height: 100%;
+}
+
+#messageContainer {
+  display: none; /* hide by default */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.message {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+}

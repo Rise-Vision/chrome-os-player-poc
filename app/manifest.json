@@ -3,11 +3,8 @@
   "name": "Chrome OS Player PoC",
   "version": "0.0.0.0",
   "permissions": [
-    "http://localhost:9000/",
-    "https://raw.githubusercontent.com/",
-    "https://apis.google.com/",
-    "https://www.googleapis.com/",
-    "https://storage.googleapis.com/",
+    "file://*",
+    "<all_urls>",
     {"fileSystem": ["write", "retainEntries", "directory", "requestFileSystem"]},
     "unlimitedStorage",
     "system.cpu",
@@ -44,6 +41,14 @@
       "listen": ["*:*"]
     }
  },
+ "webview": {
+  "partitions": [
+      {
+        "name": "trusted",
+        "accessible_resources": ["local-viewer/*"]
+      }
+    ]
+  },
   "kiosk_enabled": true,
   "kiosk_only": false,
   "kiosk": {

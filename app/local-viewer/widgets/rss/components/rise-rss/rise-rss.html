@@ -1,0 +1,394 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../rise-logger/rise-logger.html">
+<link rel="import" href="../rise-data/rise-data.html">
+
+<script src="../underscore/underscore.js"></script>
+
+<!--
+`rise-rss` fetches any RSS/Atom feed and returns the data as a Javascript object.
+
+The specified feed is periodically retrieved if the `refresh` attribute is set, although a minimum refresh
+time of 1 minute is enforced.
+
+#### Example Usage
+
+    <rise-rss id="rss" url="http://rss.cbc.ca/lineup/topstories.xml" entries="3"></rise-rss>
+
+    <script>
+      var rss = document.querySelector("rise-rss");
+
+      // Respond to events it fires.
+      rss.addEventListener("rise-rss-response", function (e) {
+        console.log(e.detail.feed);
+      });
+
+      rss.addEventListener("rise-rss-error", function (e) {
+        console.log(e.detail); // Executes a request.
+      });
+
+      rss.go();
+    </script>
+
+##### Entries
+Entries from an RSS feed can optionally be limited to a specific amount. To limit the number of entries,
+an `entries` attribute should be added to the `<rise-rss>` element.
+
+For example, to limit the amount of entries to 5:
+
+    <rise-rss url="http://example.com/rss.xml" entries="5"></rise-rss>
+
+@demo
+-->
+
+<dom-module id="rise-rss">
+  <template>
+    <rise-logger id="logger"></rise-logger>
+    <rise-data id="data" endpoint="rss" storage-type="{{_storageType}}"></rise-data>
+    <iron-ajax id="feedParserRequest"
+               url="{{_feedParserRequestUrl}}"
+               handle-as="json"
+               on-response="_handleFeedParserRequest"
+               on-error="_handleFeedParserRequestError"
+               verbose="true">
+    </iron-ajax>
+    <content></content>
+  </template>
+</dom-module>
+
+<!-- build:version -->
+<script>var rssVersion = "1.5.11";</script>
+<!-- endbuild -->
+
+<script>
+  ( function() {
+    /* global Polymer, _, rssVersion */
+    /* jshint newcap: false */
+
+    "use strict";
+
+    var LOCAL_STORAGE_NAME = "riserss",
+      BQ_TABLE_NAME = "component_rss_events";
+
+    Polymer( {
+      is: "rise-rss",
+
+      properties: {
+
+        /**
+         * The URL of the RSS feed.
+         */
+        url: {
+          type: String,
+          value: ""
+        },
+
+        /**
+         * The number of entries to return in the data.
+         */
+        entries: {
+          type: Number,
+          value: 0
+        },
+
+        /**
+         * The number of minutes before another request will be made.
+         */
+        refresh: {
+          type: Number,
+          value: 0
+        },
+
+        /**
+         * The optional usage type for Rise Vision logging purposes. Options are "standalone" or "widget"
+         */
+        usage: {
+          type: String,
+          value: ""
+        },
+
+        /**
+         * Result of RSS feed url
+         */
+        results: {
+          type: Object,
+          value: function() {
+            return {};
+          },
+          notify: true
+        }
+      },
+
+      // Element Behavior
+
+      /**
+       * Fired when a response is received.
+       *
+       * @param {Object} detail
+       * @param {Object} detail.feed Javascript object representation of feed
+       * @event rise-rss-response
+       */
+
+      /**
+       * Fired when an error is received.
+       *
+       * @event rise-rss-error
+       */
+
+      _feedParserUrl: "https://feed-parser.risevision.com/",
+
+      _feedParserRequestUrl: "",
+
+      _dataPingReceived: false,
+
+      _displayIdReceived: false,
+
+      _goPending: true,
+
+      _storageType: "session",
+
+      _onDisplayIdReceived: function( displayId ) {
+        this._displayIdReceived = true;
+
+        if ( displayId && typeof displayId === "string" ) {
+          this._storageType = "local";
+        } else {
+          this._storageType = "session";
+        }
+
+        if ( this._goPending ) {
+          this.go();
+        }
+      },
+
+      _isValidUsage: function( usage ) {
+        return usage === "standalone" || usage === "widget";
+      },
+
+      _isRiseCacheSchemeEnabled: function() {
+        try {
+          if ( top.enableRiseCacheScheme ) {
+            return true;
+          }
+        } catch ( err ) {
+          console.log( "rise-logger._isRiseCacheSchemeEnabled", err ); // eslint-disable-line no-console
+        }
+
+        return false;
+      },
+
+      _getDataCacheKey: function() {
+        return LOCAL_STORAGE_NAME + "_" + window.btoa( encodeURIComponent( escape( this.url ) ) ) + "_" + this.entries;
+      },
+
+      _getCachedData: function( cb ) {
+        this.$.data.getItem( this._getDataCacheKey(), function( cachedData ) {
+          cb( cachedData )
+        } );
+      },
+
+      _setCachedData: function( data ) {
+        var cacheObj = {};
+
+        cacheObj.data = data;
+
+        this.$.data.saveItem( this._getDataCacheKey(), cacheObj );
+
+      },
+
+      _prepareResponse: function( items ) {
+        var response = {},
+          limit;
+
+        response.feed = { "items": _.clone( items ) };
+
+        this.entries = parseInt( this.entries, 10 );
+
+        // limit the entries to provide in response
+        if ( !isNaN( this.entries ) && this.entries > 0 ) {
+          // ensure feed.items exists
+          if ( items && items.length ) {
+            // determine value to use for how many items to limit to
+            limit = ( items.length >= this.entries ) ? this.entries : items.length;
+
+            // revise to include only required entries
+            response.feed.items = _.first( items, limit );
+          }
+        }
+
+        return response;
+      },
+
+      _startTimer: function() {
+        var refreshFn = this._makeFeedParserRequest,
+          self = this;
+
+        this.refresh = parseInt( this.refresh, 10 );
+
+        if ( !isNaN( this.refresh ) && this.refresh !== 0 ) {
+          this.refresh = ( this.refresh < 1 ) ? 1 : this.refresh;
+
+          this.debounce( "refresh", function() {
+            refreshFn.call( self );
+          }, this.refresh * 60000 );
+        }
+      },
+
+      _handleRequestError: function( errors ) {
+        var self = this;
+
+        this._respondWithCacheData( function( isCachedData ) {
+          if ( !isCachedData ) {
+            // no cached data available, process the error
+            self.results = {};
+            self._startTimer();
+            self.fire( "rise-rss-error", errors );
+          }
+        } );
+      },
+
+      _handleRequestSuccess: function( items ) {
+        var responseData = this._prepareResponse( items );
+
+        // cache the data if possible
+        this._setCachedData( responseData );
+
+        this.results = responseData.feed;
+        this._startTimer();
+        this.fire( "rise-rss-response", responseData );
+      },
+
+      _validateResponse: function( data ) {
+        if ( data.Error ) {
+          this._handleRequestError( data.Error );
+        } else {
+          this._handleRequestSuccess( data );
+        }
+      },
+
+      _respondWithCacheData: function( cb ) {
+        var self = this;
+
+        this._getCachedData( function( cachedData ) {
+          var hasCacheData = false;
+
+          if ( cachedData ) {
+            hasCacheData = true;
+            // account for backwards compatibility of previous saved data structure in localStorage
+            self.results = ( cachedData.data ) ? cachedData.data.feed : cachedData.feed;
+            // start refresh timer and fire the event using the cached data
+            self._startTimer();
+            self.fire( "rise-rss-response", ( cachedData.data ) ? cachedData.data : cachedData );
+          }
+
+          cb( hasCacheData );
+        } );
+      },
+
+      _makeFeedParserFetchRequest: function() {
+        var init = {
+            method: "GET",
+            mode: "cors",
+            cache: "no-cache"
+          },
+          req = new Request( this._feedParserRequestUrl, init ),
+          that = this;
+
+        fetch( req ).then( function( response ) {
+          if ( response.ok ) {
+            return Promise.resolve( response );
+          } else {
+            return Promise.reject( new Error( response.statusText ) );
+          }
+        } ).then( function( response ) {
+          return response.json();
+        } ).then( function( json ) {
+          that._validateResponse( json );
+        } ).catch( function( error ) {
+          that._handleRequestError( error );
+        } );
+      },
+
+      _makeFeedParserRequest: function() {
+        this._feedParserRequestUrl = this._feedParserUrl + this.url;
+
+        if ( this._isRiseCacheSchemeEnabled() ) {
+          this._makeFeedParserFetchRequest();
+        } else {
+          this.$.feedParserRequest.generateRequest();
+        }
+      },
+
+      _handleFeedParserRequest: function( e, resp ) {
+        if ( resp && resp.response ) {
+          this._validateResponse( resp.response );
+        } else {
+          this._startTimer();
+        }
+      },
+
+      _handleFeedParserRequestError: function( e, resp ) {
+        this._handleRequestError( resp );
+      },
+
+      _onDataPingReceived: function() {
+        this._dataPingReceived = true;
+
+        if ( this._goPending ) {
+          this.go();
+        }
+      },
+
+      // Element Lifecycle
+
+      ready: function() {
+        var self = this,
+          params = {
+            event: "ready"
+          };
+
+        // listen for data ping received
+        this.$.data.addEventListener( "rise-data-ping-received", function() {
+          self._onDataPingReceived();
+        } );
+
+        // listen for logger display id received
+        this.$.logger.addEventListener( "rise-logger-display-id", function( e ) {
+          self._onDisplayIdReceived( e.detail );
+        } );
+
+        // only include usage_type if it's a valid usage value
+        if ( this._isValidUsage( this.usage ) ) {
+          params.usage_type = this.usage;
+        }
+
+        params.version = rssVersion;
+
+        // log usage
+        this.$.logger.log( BQ_TABLE_NAME, params );
+      },
+
+      /**
+       * Performs a request to obtain the RSS feed
+       *
+       */
+      go: function() {
+        var self = this;
+
+        if ( !this.url || !this._displayIdReceived || !this._dataPingReceived ) {
+          this._goPending = true;
+          return;
+        }
+
+        this._goPending = false;
+
+        this._respondWithCacheData( function( isCachedData ) {
+          if ( !isCachedData ) {
+            self._makeFeedParserRequest();
+          }
+        } );
+      }
+
+    } );
+  } )();
+</script>
