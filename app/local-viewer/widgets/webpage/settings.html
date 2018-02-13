@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Web Page Settings</title>
+
+  <link rel="stylesheet" href="css/settings.min.css"/>
+
+  <style type="text/css">
+    body, html {
+      background: transparent;
+    }
+  </style>
+
+  <!-- FullStory -->
+  <script>window['_fs_is_outer_script'] = true; window['_fs_debug'] = false; window['_fs_host'] = 'www.fullstory.com'; window['_fs_org'] = 'U3O'; (function(m,n,e,t,l,o,g,y){ g=m[e]=function(a,b){g.q?g.q.push([a,b]):g._api(a,b);};g.q=[]; o=n.createElement(t);o.async=1;o.src='https://'+_fs_host+'/s/fs.js'; y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y); g.identify=function(i,v){g(l,{uid:i});if(v)g(l,v)};g.setUserVars=function(v){FS(l,v)}; g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;FS(o,v)}; g.clearUserCookie=function(d,i){d=n.domain;while(1){n.cookie='fs_uid=;domain='+d+ ';path=/;expires='+new Date(0);i=d.indexOf('.');if(i<0)break;d=d.slice(i+1)}} })(window,document,'FS','script','user');</script>
+
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.20/angular.min.js"></script>
+  <!-- if AngularJS fails to load fallback to a local version -->
+  <script>window.angular || document.write(unescape("%3Cscript src='js/vendor/angular/angular.min.js' type='text/javascript'%3E%3C/script%3E"));
+  </script>
+</head>
+<body ng-app="risevision.widget.web-page.settings" ng-controller="settingsController">
+  <div class="container-fluid image-settings-fs">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content scrollable-list" ng-controller="webPageSettingsController" ng-cloak>
+
+        <!-- Modal Header-->
+        <div class="modal-header">
+          <button type="button" class="close" ng-click="closeSettings()">
+            <i class="fa fa-times half-top"></i>
+          </button>
+          <h3 class="modal-title">
+            {{"widget-web-page.settings" | translate }}
+            <a class="btn btn-link" href="https://github.com/Rise-Vision/widget-web-page" target="_blank">
+              <i class="fa fa-github fa-2x icon-gray"></i>
+            </a>
+          </h3>
+        </div>
+
+        <!-- Modal Body-->
+        <form role="form" name="settingsForm">
+          <div class="modal-body">
+
+            <!-- URL -->
+            <div class="form-group">
+              <url-field id="pageUrl" name="pageUrl" url="settings.additionalParams.url" hide-storage="hide"
+                         ng-model="urlentry" valid url-input init-empty></url-field>
+              <p ng-if="!noXFrameOptions" class="text-danger">{{ "widget-web-page.warning.message" | translate }} <a ng-href="https://developer.mozilla.org/en-US/docs/Web/HTTP/X-Frame-Options" target="_blank">{{ "widget-web-page.warning.anchor" | translate}}</a>.</p>
+            </div>
+
+            <!-- Refresh -->
+            <div class="form-group">
+              <label class="control-label" for="refresh">{{"widget-web-page.refresh.label" | translate}}</label>
+              <div class="row">
+                <div class="col-sm-4">
+                  <select id="refresh" name="refresh" ng-model="settings.additionalParams.refresh" class="form-control">
+                    <option value="0">{{"widget-web-page.refresh.none" | translate}}</option>
+                    <option value="60000">1 {{"common.units.minutes" | translate}}</option>
+                    <option value="300000">5 {{"common.units.minutes" | translate}}</option>
+                    <option value="1800000">30 {{"common.units.minutes" | translate}}</option>
+                    <option value="3600000">60 {{"common.units.minutes" | translate}}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Unload -->
+            <div class="form-group">
+              <div class="checkbox">
+                <label>
+                  <input name="audio" type="checkbox" ng-model="settings.additionalParams.unload"> {{ "widget-web-page.unload.label" | translate}}
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Region -->
+            <h4>{{ "widget-web-page.region.heading" | translate}}</h4>
+
+            <!-- Show Entire Page -->
+            <div class="radio">
+              <label>
+                <input type="radio" ng-model="settings.additionalParams.region.showRegion" value="page">
+                {{ "widget-web-page.region.page" | translate}}
+              </label>
+            </div>
+
+            <!-- Show a Region -->
+            <div class="radio">
+              <label>
+                <input type="radio" ng-model="settings.additionalParams.region.showRegion" value="region">
+                {{ "widget-web-page.region.region" | translate}}
+              </label>
+            </div>
+
+            <div ng-show="settings.additionalParams.region.showRegion === 'region'">
+              <!-- Horizontal Scroll -->
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-sm-4">
+                    <label for="horizontal" class="control-label">
+                      {{ "widget-web-page.region.horizontal" | translate}}
+                    </label>
+                    <div class="input-group">
+                      <input id="horizontal" type="number" class="form-control"
+                        ng-model="settings.additionalParams.region.horizontal" />
+                      <span class="input-group-addon">{{"common.units.pixels" | translate}}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vertical Scroll -->
+              <div class="form-group">
+                <div class="row">
+                  <div class="col-sm-4">
+                    <label class="control-label" for="vertical">
+                      {{ "widget-web-page.region.vertical" | translate}}
+                    </label>
+                    <div class="input-group">
+                      <input id="vertical" type="number" class="form-control"
+                        ng-model="settings.additionalParams.region.vertical" />
+                      <span class="input-group-addon">{{"common.units.pixels" | translate}}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End Region -->
+
+            <hr>
+
+            <!-- Zoom -->
+            <h4>{{ "widget-web-page.zoom.heading" | translate}}</h4>
+            <div class="form-group">
+              <div class="row">
+                <div class="col-sm-4">
+                  <select id="zoom" name="zoom" class="form-control" ng-model="settings.additionalParams.zoom">
+                    <option value="0.50">50%</option>
+                    <option value="0.75">75%</option>
+                    <option value="0.90">90%</option>
+                    <option value="1" selected="selected">100%</option>
+                    <option value="1.25">125%</option>
+                    <option value="1.50">150%</option>
+                    <option value="2">200%</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <!-- End Zoom -->
+
+            <hr>
+
+            <!-- Interactivity -->
+            <h4>{{ "widget-web-page.interactivity.heading" | translate}}</h4>
+            <div class="checkbox">
+              <label>
+                <input name="interactive" type="checkbox" ng-model="settings.additionalParams.interactivity.interactive"> {{ "widget-web-page.interactivity.interactive" | translate}}
+              </label>
+            </div>
+            <div class="checkbox" ng-show="settings.additionalParams.interactivity.interactive">
+              <label ng-class="{'label-disabled':settings.additionalParams.zoom > 1}">
+                <!-- TODO: ng-disabled="settings.additionalParams.zoom > 1" -->
+                <input name="scrollbars" type="checkbox" ng-disabled="settings.additionalParams.zoom > 1"
+                       ng-model="settings.additionalParams.interactivity.scrollbars"> {{ "widget-web-page.interactivity.scrollbars" | translate}}
+              </label>
+            </div>
+
+          </div>
+
+          <!-- Modal Footer-->
+          <div class="modal-footer">
+            <!-- Button Toolbar -->
+            <widget-button-toolbar save="saveSettings()" cancel="closeSettings()" disable-save="settingsForm.$invalid">
+            </widget-button-toolbar>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  <script>
+    if (typeof jQuery == "undefined") {
+      document.write(unescape("%3Cscript src='js/vendor/jquery/dist/jquery.min.js' type='text/javascript'%3E%3C/script%3E"));
+    }
+  </script>
+
+  <script src="js/settings.min.js"></script>
+
+  <!-- build:e2egadgets -->
+  <script src="//rvashow2.appspot.com/gadgets/gadgets.min.js"></script>
+  
+
+  <!-- Get from Bower if needed. -->
+  <script src="//s3.amazonaws.com/rise-common/scripts/i18next/i18next.min.js"></script>
+
+</body>
+</html>

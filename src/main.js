@@ -15,7 +15,7 @@ function readLargeFilesDir() {
                 entry.file((file) => {
                     const item = document.createElement('li');
                     const itemText = `${file.name}, ${file.type}, ${humanFileSize(file.size)}, ${file.lastModifiedDate}`;
-                    if (file.type.startsWith('image') || file.type.startsWith('video')) {
+                    if (file.type.startsWith('image') || file.type.startsWith('video') || file.type.startsWith('text/html')) {
                         item.innerHTML = `<a href="${entry.toURL()}" data-src="${entry.toURL()}" data-type="${file.type}">${itemText}</a>`;
                         item.addEventListener('click', openLink);
                     } else {
@@ -55,15 +55,19 @@ function openLink(e) {
         {hidden: true},
         (appWin) => {
             appWin.contentWindow.addEventListener('DOMContentLoaded', () => {
-                let tag = 'p';
                 if (type.startsWith('image')) {
-                    tag = 'img';
+                    const img = appWin.contentWindow.document.createElement('img');
+                    img.src = url;
+                    appWin.contentWindow.document.body.appendChild(img);
                 } else if (type.startsWith('video')) {
-                    tag = 'video';
+                    const video = appWin.contentWindow.document.createElement('video');
+                    video.src = url;
+                    appWin.contentWindow.document.body.appendChild(video);
+                } else if (type.startsWith('text/html')) {
+                    const webview = appWin.contentWindow.document.querySelector('iframe');
+                    webview.src = url;
                 }
-                const element = appWin.contentWindow.document.createElement(tag);
-                element.src = url;
-                appWin.contentWindow.document.body.appendChild(element);
+
                 appWin.show();
             }
         );
@@ -90,7 +94,7 @@ function writeToOutput(text) {
 
 function testSavingLargeFile(url, name) {
     writeToOutput(`Downloading ${url}`);
-    fetch(url)
+    return fetch(url)
         .then((response) => {
             writeToOutput(`Saving file ${name}`);
             return FileSystem.saveFile(name, response.body, dirName);
@@ -111,14 +115,20 @@ function launchViewer(event) {
 
     event.preventDefault();
 
+    let viewerUrl = `http://rvashow.appspot.com/Viewer.html?player=true&type=display&id=${displayId}`;
+    const offline = document.getElementById('offline').checked;
+    if (offline) {
+        viewerUrl = chrome.runtime.getURL(`local-viewer/viewer/localviewer/main/Viewer.html?player=true&type=display&id=${displayId}`);
+    }
+
     getWindowOptions().then((windowOptions) => {
-        const viewerUrl = `http://rvashow.appspot.com/Viewer.html?player=true&type=display&id=${displayId}`;
         chrome.app.window.create(
             'viewer.html',
             {id: 'viewer', hidden: true, state: 'maximized', innerBounds: windowOptions},
             (appWin) => {
                 appWin.contentWindow.addEventListener('DOMContentLoaded', () => {
                     const webview = appWin.contentWindow.document.querySelector('webview');
+                    webview.addEventListener('permissionrequest', handleViewerWebViewPermissions);
                     webview.style.height = `${windowOptions.height}px`;
                     webview.style.width = '100%';
                     webview.src = viewerUrl;
@@ -127,6 +137,16 @@ function launchViewer(event) {
             );
         });
     });
+}
+
+function handleViewerWebViewPermissions(event) {
+    console.log(`Permission ${event.permission} requested by webview`);
+    const allowedPermissions = ['geolocation', 'filesystem', 'loadplugin'];
+    if (allowedPermissions.includes(event.permission)) {
+        event.request.allow();
+    } else {
+        event.request.deny();
+    }
 }
 
 function getWindowOptions() {
@@ -175,8 +195,16 @@ function init() {
     const launchViewerButton = document.getElementById('launchViewer');
     launchViewerButton.addEventListener('click', launchViewer);
 
-    const testLargeFilesButton = document.getElementById('testLargeFiles');
-    testLargeFilesButton.addEventListener('click', () => {readLargeFilesDir().then(testSavingLargeFiles)});
+    const saveFileButton = document.getElementById('saveFile');
+    saveFileButton.addEventListener('click', () => {
+        const url = document.getElementById('url').value;
+        const name = url.substring(url.lastIndexOf('/') + 1);
+        testSavingLargeFile(url, name).then(() => {
+            const filesList = document.getElementById('files');
+            filesList.childNodes.forEach(li => filesList.removeChild(li));
+            readLargeFilesDir();
+        });
+    });
 
     chrome.storage.local.get("launchData", ({launchData}) => {
         console.log(launchData);
@@ -191,6 +219,8 @@ function init() {
     startWebServer();
 }
 
+let webServer = null;
+
 function startWebServer() {
     FileSystem.requestFileSystem()
         .then(fs => FileSystem.getDirectory(fs, dirName, true))
@@ -202,11 +232,20 @@ function startWebServer() {
                 optAutoStart: false,
                 port: 8080
             };
-            const server = new WSC.WebApplication(options);
-            server.start(() => {
+            webServer = new WSC.WebApplication(options);
+            webServer.start(() => {
                 console.log('Webserver started');
             });
         });
 }
+
+function stopWebServer() {
+    if (webServer) {
+        console.log('Stopping web server');
+        webServer.stop();
+    }
+}
+
+chrome.runtime.onSuspend.addListener(stopWebServer);
 
 document.addEventListener("DOMContentLoaded", init);

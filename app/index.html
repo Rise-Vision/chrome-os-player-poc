@@ -9,10 +9,16 @@
 <body>
     <form>
         <label for="displayId">Display ID:</label>
-        <input id="displayId" type="text" value="7D9TUNQDZZKD"></input>
+        <input id="displayId" name="displayId" type="text" value="7D9TUNQDZZKD"></input>
+        <label for="offline">Offline:</label>
+        <input id="offline" name="offline" type="checkbox"></input>
         <button id="launchViewer">Launch Viewer</button>
     </form>
-    <p><button id="testLargeFiles">Test saving large files</button></p>
+    <form>
+        <label for="url">URL:</label>
+        <input id="url" type="text" style="width: 300px"></input>
+        <button id="saveFile">Save File</button>
+    </form>
     <label>Existing files:</label>
     <ul id="files"></ul>
     <output></output>

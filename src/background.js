@@ -28,7 +28,6 @@ function init(launchData) {
     createHelloWorldWindow();
 
     const modules = {
-        messaging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/messaging.js',
         logging: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/logging.js',
         watchdog: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/watchdog.js',
         displayControl: 'https://raw.githubusercontent.com/Rise-Vision/chrome-os-player-poc/master/server/displayControl.js',

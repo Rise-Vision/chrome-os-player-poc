@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spreadsheet Settings</title>
+
+  <link rel="stylesheet" href="css/settings.min.css"/>
+
+  <style type="text/css">
+    body, html {
+      background: transparent;
+    }
+
+    .colorpicker-parent {
+      position:relative;
+    }
+  </style>
+
+  <!-- FullStory -->
+  <script>window['_fs_is_outer_script'] = true; window['_fs_debug'] = false; window['_fs_host'] = 'www.fullstory.com'; window['_fs_org'] = 'U3O'; (function(m,n,e,t,l,o,g,y){ g=m[e]=function(a,b){g.q?g.q.push([a,b]):g._api(a,b);};g.q=[]; o=n.createElement(t);o.async=1;o.src='https://'+_fs_host+'/s/fs.js'; y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y); g.identify=function(i,v){g(l,{uid:i});if(v)g(l,v)};g.setUserVars=function(v){FS(l,v)}; g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;FS(o,v)}; g.clearUserCookie=function(d,i){d=n.domain;while(1){n.cookie='fs_uid=;domain='+d+ ';path=/;expires='+new Date(0);i=d.indexOf('.');if(i<0)break;d=d.slice(i+1)}} })(window,document,'FS','script','user');</script>
+
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.14/angular.min.js"></script>
+  <!-- if AngularJS fails to load fallback to a local version -->
+  <script>window.angular || document.write(unescape("%3Cscript src='js/vendor/angular/angular.min.js' type='text/javascript'%3E%3C/script%3E"));
+  </script>
+
+  <!-- build:e2eTinymce -->
+  <script src="js/vendor/tinymce/tinymce.min.js"></script>
+  
+
+</head>
+<body ng-app="risevision.widget.googleSpreadsheet.settings" ng-controller="settingsController">
+<div class="container-fluid image-settings-fs">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content scrollable-list" ng-controller="spreadsheetSettingsController" ng-cloak>
+
+      <!-- Modal Header-->
+      <div class="modal-header">
+        <button type="button" class="close" ng-click="closeSettings()">
+          <i class="fa fa-times half-top"></i>
+        </button>
+        <h3 class="modal-title">
+          {{"widget-google-spreadsheet.settings" | translate }}
+          <a class="btn btn-link" href="https://github.com/Rise-Vision/widget-google-spreadsheet" target="_blank">
+            <i class="fa fa-github fa-2x icon-gray"></i>
+          </a>
+        </h3>
+      </div>
+
+      <!-- Modal Body-->
+      <form role="form" name="settingsForm">
+        <div class="modal-body">
+          <h4>Spreadsheet</h4>
+          <!-- FILE SELECTOR -->
+          <div class="form-group file-selector">
+            <div class="row half-top half-bottom">
+              <div class="col-md-12">
+                <!-- Storage Single File - Button -->
+                <google-drive-picker id="google-drive" view-id="spreadsheets"></google-drive-picker>
+
+                <span class="add-left add-right text-muted">{{"common.or" | translate }}</span>
+
+                <!-- URL -->
+                <button id="spreadsheet-key" type="button" class="btn btn-default" ng-click="setSelection()">
+                  {{"widget-google-spreadsheet.spreadsheet.key.select" | translate }}
+                </button>
+              </div>
+            </div>
+
+            <div class="preview form-group" ng-if="showPreview">
+              <div class="input-group custom-addon">
+                <div class="clear-selection">
+                  <!-- Select Spreadsheet -->
+                  <input type="text" class="form-control" ng-model="settings.additionalParams.spreadsheet.docName"
+                    readonly="" ng-if="settings.additionalParams.spreadsheet.selection === 'drive'" valid>
+
+                  <!-- Spreadsheet Key -->
+                  <input type="text" class="form-control" placeholder="{{'widget-google-spreadsheet.spreadsheet.key.placeholder' | translate }}"
+                    ng-model="settings.additionalParams.spreadsheet.fileId" ng-blur="fileIdBlur()" ng-if="settings.additionalParams.spreadsheet.selection === 'key'" valid>
+
+                  <span ng-click="clearSelection()">
+                    <i class="fa fa-times-circle" aria-hidden="true"></i>
+                  </span>
+                </div>
+
+                <span class="input-group-addon">
+                  <button name="previewBtn" class="btn btn-default" ng-click="previewFile()">{{"widget-google-spreadsheet.spreadsheet.preview" | translate }}
+                    <img src="https://s3.amazonaws.com/Rise-Images/Icons/newtab-icon.png"
+                      class="storage-selector-icon icon-right">
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <!-- END FILE SELECTOR -->
+
+          <div ng-if="!public">
+            <div class="content-box add-bottom">
+              <div class="bg-danger add-padding">
+                <a class="btn btn-default pull-right" ng-click="retryFile()">
+                  {{"widget-google-spreadsheet.spreadsheet.retry" | translate}}
+                </a>
+                <span translate="{{'widget-google-spreadsheet.spreadsheet.public.message'}}"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label">{{ "widget-google-spreadsheet.spreadsheet.sheet" | translate }}</label>
+            <select id="sheet" name="sheet" ng-model="currentSheet" ng-options="sheet.label for sheet in sheets" class="form-control"></select>
+          </div>
+
+
+          <div class="checkbox">
+            <label class="control-label">
+              <input type="checkbox" name="hasHeader" ng-model="settings.additionalParams.spreadsheet.hasHeader"><strong>{{ "widget-google-spreadsheet.spreadsheet.first-row-as-header" | translate }}</strong></input>
+            </label>
+          </div>
+
+          <!-- Entire Sheet or Range -->
+          <div class="radio">
+            <label>
+              <input type="radio" ng-model="settings.additionalParams.spreadsheet.cells" value="sheet">
+              <strong>{{ "widget-google-spreadsheet.spreadsheet.cells.sheet" | translate }}</strong>
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" ng-model="settings.additionalParams.spreadsheet.cells" value="range">
+              <strong>{{ "widget-google-spreadsheet.spreadsheet.cells.range" | translate }}</strong>
+            </label>
+          </div>
+
+          <div class="add-top">
+            <div class="form-group" ng-if="settings.additionalParams.spreadsheet.cells === 'range'">
+              <div class="row">
+                <div class="col-sm-3">
+                  <label class="control-label-secondary">
+                    {{ "widget-google-spreadsheet.spreadsheet.range.start" | translate }}
+                  </label>
+                  <input name="startCell" type="text" class="form-control"
+                         ng-blur="startCellBlur()"
+                         ng-model="settings.additionalParams.spreadsheet.range.startCell" />
+                </div>
+                <div class="col-sm-3">
+                  <label class="control-label-secondary">
+                    {{ "widget-google-spreadsheet.spreadsheet.range.end" | translate }}
+                  </label>
+                  <input name="endCell" type="text" class="form-control"
+                         ng-blur="endCellBlur()"
+                         ng-model="settings.additionalParams.spreadsheet.range.endCell" />
+                </div>
+              </div>
+            </div>
+            <div ng-if="!validData">
+              <div class="content-box add-bottom">
+                <div class="bg-danger add-padding">
+                  {{"widget-google-spreadsheet.spreadsheet.data.error" | translate}}
+                  {{"widget-google-spreadsheet.spreadsheet.range.invalid" | translate}}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <!--  REFRESH INTERVAL -->
+          <div>
+            <div class="form-group" >
+              <div class="row">
+                <div class="col-sm-12">
+                  <label class="control-label">{{ "widget-google-spreadsheet.spreadsheet.refresh" | translate }}</label>
+                  <div>
+                    <span>{{ "widget-google-spreadsheet.spreadsheet.apiKeyDescription" | translate }} <a href="https://risevision.zendesk.com/hc/en-us/articles/115002245846" target="_blank">{{ "widget-google-spreadsheet.spreadsheet.apiKeyDescriptionLink" | translate }}</a></span>
+                  </div>
+                </div>
+              </div><!--row-->
+            </div><!--form-group-->
+            <div class="form-group">
+              <label class="control-label">{{ "widget-google-spreadsheet.spreadsheet.apiKey" | translate }}</label>
+              <div class="row">
+                <div class="col-sm-6">
+                  <input type="text" class="form-control" ng-blur="apiKeyBlur()" ng-model="settings.additionalParams.spreadsheet.apiKey" ng-disabled="!settings.additionalParams.spreadsheet.url || !public"  valid>
+                </div>
+              </div>
+            </div>
+
+            <div ng-if="!validApiKey">
+              <div class="content-box add-bottom">
+                <div class="bg-danger add-padding">
+                  <span translate="{{'widget-google-spreadsheet.spreadsheet.apiKeyNotValid'}}"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="control-label">{{ "widget-google-spreadsheet.spreadsheet.refreshInterval" | translate }}</label>
+              <div class="row">
+                <div class="col-sm-3">
+                  <div class="input-group">
+                    <input type="number" class="form-control" ng-model="settings.additionalParams.spreadsheet.refresh" ng-disabled="!settings.additionalParams.spreadsheet.apiKey || !validApiKey">
+                    <span class="input-group-addon">{{ "common.units.minutes" | translate }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+          </div>
+    <!-- END REFRESH INTERVAL -->
+
+
+    <scroll-setting hide-direction="true" scroll="settings.additionalParams.scroll"></scroll-setting>
+
+          <hr>
+
+          <h4>{{ "widget-google-spreadsheet.format.heading" | translate}}</h4>
+
+          <h5>{{ "widget-google-spreadsheet.format.spreadsheet" | translate}}</h5>
+
+          <div class="section">
+            <div class="row">
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>{{ "widget-google-spreadsheet.format.rowHeight" | translate }}</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" ng-model="settings.additionalParams.format.rowHeight">
+                    <span class="input-group-addon">{{ "common.units.pixels" | translate }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>{{ "widget-google-spreadsheet.format.oddRow" | translate}}</label>
+                  <div class="colorpicker-parent">
+                    <div class="input-group" colorpicker="rgba" colorpicker-parent="true" ng-model="settings.additionalParams.format.oddRowColor">
+                      <input class="form-control" type="text" ng-model="settings.additionalParams.format.oddRowColor">
+                      <span class="input-group-addon color-wheel"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-3">
+                <div class="form-group">
+                  <label>{{ "widget-google-spreadsheet.format.evenRow" | translate}}</label>
+                  <div class="colorpicker-parent">
+                    <div class="input-group" colorpicker="rgba" colorpicker-parent="true" ng-model="settings.additionalParams.format.evenRowColor">
+                      <input class="form-control" type="text" ng-model="settings.additionalParams.format.evenRowColor">
+                      <span class="input-group-addon color-wheel"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Separator -->
+            <label class="control-label add-top">{{ "widget-google-spreadsheet.format.separator.heading" | translate }}</label>
+
+            <div class="row">
+              <div class="col-md-3">
+                <div class="checkbox">
+                  <label class="control-label">
+                    <input type="checkbox" name="showRowSeparator" ng-model="settings.additionalParams.format.separator.showRow">{{ "widget-google-spreadsheet.format.separator.row" | translate }}</input>
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <div class="checkbox">
+                  <label class="control-label">
+                    <input type="checkbox" name="showColumnSeparator" ng-model="settings.additionalParams.format.separator.showColumn">{{ "widget-google-spreadsheet.format.separator.column" | translate }}
+                  </label>
+                </div>
+              </div>
+
+              <!-- Color -->
+              <div class="col-md-3" ng-if="settings.additionalParams.format.separator.showRow || settings.additionalParams.format.separator.showColumn">
+                <div class="colorpicker-parent">
+                  <div class="input-group" colorpicker="rgba" colorpicker-parent="true" ng-model="settings.additionalParams.format.separator.color">
+                    <input class="form-control" type="text" ng-model="settings.additionalParams.format.separator.color">
+                    <span class="input-group-addon color-wheel"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <hr>
+
+          <div class="row" ng-if="settings.additionalParams.spreadsheet.hasHeader">
+            <div class="col-md-12">
+              <h5>{{ "widget-google-spreadsheet.format.header.label" | translate}}</h5>
+              <font-setting id="header-font" font-data="settings.additionalParams.format.header.fontStyle"
+                            vertical-align="true"
+                            preview-text="{{'widget-google-spreadsheet.format.header.text' | translate }}">
+              </font-setting>
+            </div>
+          </div>
+
+          <hr ng-if="settings.additionalParams.spreadsheet.hasHeader">
+
+          <div class="row">
+            <div class="col-md-12">
+              <h5>{{ "widget-google-spreadsheet.format.body.label" | translate}}</h5>
+              <font-setting id="body-font" font-data="settings.additionalParams.format.body.fontStyle"
+                            vertical-align="true"
+                            preview-text="{{'widget-google-spreadsheet.format.body.text' | translate }}">
+              </font-setting>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="row">
+            <div class="col-md-12">
+              <column-selector columns="settings.additionalParams.format.columns" column-names="columns">
+              </column-selector>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer-->
+        <div class="modal-footer">
+          <!-- Button Toolbar -->
+          <widget-button-toolbar save="saveSettings()" cancel="closeSettings()" disable-save="settingsForm.$invalid">
+          </widget-button-toolbar>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script>
+  if (typeof jQuery == "undefined") {
+    document.write(unescape("%3Cscript src='js/vendor/jquery/dist/jquery.min.js' type='text/javascript'%3E%3C/script%3E"));
+  }
+</script>
+
+<script src="js/settings.min.js"></script>
+
+<script src="//www.google.com/jsapi"></script>
+
+<!-- build:e2eTestApp -->
+
+
+<!-- build:e2eAngularMocks -->
+
+
+<!-- build:e2egadgets -->
+<script src="//rvashow2.appspot.com/gadgets/gadgets.min.js"></script>
+
+
+<!-- Get from Bower if needed. -->
+<script src="//s3.amazonaws.com/rise-common/scripts/i18next/i18next.min.js"></script>
+
+<!-- build:e2eSpreadsheetHTTP -->
+
+
+<!-- build:e2ePicker -->
+<script src="//apis.google.com/js/client.js?onload=handleClientJSLoad"></script>
+
+
+<!-- build:e2eAppReplace -->
+
+
+</body>
+</html>
