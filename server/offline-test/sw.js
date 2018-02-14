@@ -29,6 +29,19 @@ function fromNetwork(request, timeout) {
     });
 }
 
+function update(request, response) {
+    if (request.url.startsWith('http://localhost:8080')) {
+        console.log('Skipping cache of local large file');
+        return Promise.resolve(response);
+    }
+
+    return caches.open(CACHE).then((cache) => {
+        return cache.put(request, response.clone()).then(() => {
+            return response;
+        });
+    });
+}
+
 self.addEventListener('install', (event) => {
     console.log('Service worker installing...');
     console.log(event);
@@ -53,7 +66,10 @@ self.addEventListener('sync', (event) => {
 self.addEventListener('fetch', (event) => {
     console.log('Service worker fetch...');
     console.log(event);
-    event.respondWith(fromNetwork(event.request, 400).catch(() => {
-        return fromCache(event.request);
-    }));
+    const request = event.request;
+    event.respondWith(fromNetwork(request, 400)
+        .then((response) => update(request, response))
+        .catch(() => {
+            return fromCache(request);
+        }));
 });
