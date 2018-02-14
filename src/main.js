@@ -64,7 +64,7 @@ function openLink(e) {
                     video.src = url;
                     appWin.contentWindow.document.body.appendChild(video);
                 } else if (type.startsWith('text/html')) {
-                    const webview = appWin.contentWindow.document.querySelector('iframe');
+                    const webview = appWin.contentWindow.document.querySelector('webview');
                     webview.src = url;
                 }
 
@@ -121,6 +121,11 @@ function launchViewer(event) {
         viewerUrl = chrome.runtime.getURL(`local-viewer/viewer/localviewer/main/Viewer.html?player=true&type=display&id=${displayId}`);
     }
 
+    createViewerWindowWithUrl(viewerUrl);
+}
+
+function createViewerWindowWithUrl(url) {
+    console.log(`creating viewer window with url: ${url}`);
     getWindowOptions().then((windowOptions) => {
         chrome.app.window.create(
             'viewer.html',
@@ -131,7 +136,8 @@ function launchViewer(event) {
                     webview.addEventListener('permissionrequest', handleViewerWebViewPermissions);
                     webview.style.height = `${windowOptions.height}px`;
                     webview.style.width = '100%';
-                    webview.src = viewerUrl;
+                    console.log(`loading webview with url: ${url}`);
+                    webview.src = url;
                     appWin.show();
                 }
             );
@@ -206,6 +212,16 @@ function init() {
         });
     });
 
+    const launchWebViewButton = document.getElementById('launchWebView');
+    launchWebViewButton.addEventListener('click', (event) => {
+        const url = document.getElementById('url').value;
+        if (!url) {
+            return;
+        }
+        event.preventDefault();
+        createViewerWindowWithUrl(url);
+    });
+
     chrome.storage.local.get("launchData", ({launchData}) => {
         console.log(launchData);
         // FileSystem.kioskMode = launchData.isKioskSession;
@@ -230,6 +246,7 @@ function startWebServer() {
                 renderIndex: false,
                 optBackground: false,
                 optAutoStart: false,
+                optCORS: true,
                 port: 8080
             };
             webServer = new WSC.WebApplication(options);
