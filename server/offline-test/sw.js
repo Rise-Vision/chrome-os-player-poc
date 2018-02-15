@@ -1,8 +1,8 @@
 const CACHE = 'offline-viewer-poc';
 
 const staticContent = [
-    '/rise-andre/offline-test/index.html',
-    '/rise-andre/offline-test/main.js'
+    'index.html',
+    'main.js'
 ];
 
 function precache() {
