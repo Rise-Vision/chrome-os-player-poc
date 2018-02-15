@@ -19,11 +19,11 @@ program
 function incrementVersion() {
   const d = new Date();
   const manifest = JSON.parse(fs.readFileSync(manifestFilePath, {encoding: "utf8"}));
-  const dayMinutes = d.getHours() * 60 + d.getMinutes();
+  const dayMinutes = d.getUTCHours() * 60 + d.getUTCMinutes();
   const dayPct = dayMinutes / 1440;
 
   const patch = parseInt(((dayPct) + "").split(".")[1].substr(0,4)) + 1000;
-  manifest.version = (d.getFullYear() - 2000) + "." + (d.getMonth() + 1) + "." +  d.getDate() + "." + patch;
+  manifest.version = (d.getUTCFullYear() - 2000) + "." + (d.getUTCMonth() + 1) + "." +  d.getUTCDate() + "." + patch;
 
   const publishVersion = manifest.version;
 
