@@ -143,6 +143,10 @@ function createViewerWindowWithUrl(url) {
                     webview.style.width = '100%';
                     console.log(`loading webview with url: ${url}`);
                     webview.src = url;
+
+                    const closeButton = appWin.contentWindow.document.getElementById('close');
+                    closeButton.addEventListener('click', () => appWin.contentWindow.close());
+
                     appWin.show();
                 }
             );
@@ -238,6 +242,17 @@ function init() {
     });
 
     startWebServer();
+    showNetworkCondition();
+}
+
+function showNetworkCondition() {
+    function writeStatus() {
+        writeToOutput(`Is online: ${navigator.onLine}`);
+    }
+
+    window.addEventListener('online', writeStatus);
+    window.addEventListener('offline', writeStatus);
+    writeStatus();
 }
 
 let webServer = null;
