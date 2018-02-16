@@ -49,6 +49,7 @@
       }
     ]
   },
+  "offline_enabled": true,
   "kiosk_enabled": true,
   "kiosk_only": false,
   "kiosk": {
