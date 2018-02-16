@@ -10,6 +10,7 @@ function readLargeFilesDir() {
     return FileSystem.listEntries(dirName)
         .then((entries) => {
             const list = document.getElementById('files');
+            list.innerHTML = '';
             entries.forEach(entry => {
                 console.log(entry);
                 entry.file((file) => {
@@ -75,14 +76,18 @@ function openLink(e) {
 }
 
 function testSavingLargeFiles(existingFiles) {
-    const files = ['ten_mega.png', 'fifty_mega.mp4', 'one_hundred_mega.webm', 'one_and_a_half_gig.mp4'];
+    console.log(`testSavingLargeFiles, existing: ${JSON.stringify(existingFiles)}`);
+    const files = ['ten_mega.png', 'rise.jpg'];
     const baseUrl = 'https://storage.googleapis.com/rise-andre/';
 
+    const promises = [];
     files.forEach((file) => {
         if (existingFiles.indexOf(file) < 0) {
-            testSavingLargeFile(`${baseUrl}${file}`, file);
+            promises.push(testSavingLargeFile(`${baseUrl}${file}`, file));
         }
     });
+
+    return Promise.all(promises);
 }
 
 function writeToOutput(text) {
@@ -205,11 +210,8 @@ function init() {
     saveFileButton.addEventListener('click', () => {
         const url = document.getElementById('url').value;
         const name = url.substring(url.lastIndexOf('/') + 1);
-        testSavingLargeFile(url, name).then(() => {
-            const filesList = document.getElementById('files');
-            filesList.childNodes.forEach(li => filesList.removeChild(li));
-            readLargeFilesDir();
-        });
+        testSavingLargeFile(url, name)
+            .then(readLargeFilesDir);
     });
 
     const launchWebViewButton = document.getElementById('launchWebView');
@@ -226,10 +228,13 @@ function init() {
         console.log(launchData);
         // FileSystem.kioskMode = launchData.isKioskSession;
 
-        readLargeFilesDir().then(() => {
-            // testMSClientSocket();
-            testAvailableDiskSpace();
-        });
+        readLargeFilesDir()
+            .then(testSavingLargeFiles)
+            .then(readLargeFilesDir)
+            .then(() => {
+                // testMSClientSocket();
+                testAvailableDiskSpace();
+            });
     });
 
     startWebServer();
@@ -263,6 +268,7 @@ function stopWebServer() {
     }
 }
 
+chrome.app.window.onClosed.addListener(stopWebServer);
 chrome.runtime.onSuspend.addListener(stopWebServer);
 
 document.addEventListener("DOMContentLoaded", init);
