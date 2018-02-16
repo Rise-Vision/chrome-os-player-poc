@@ -238,6 +238,17 @@ function init() {
     });
 
     startWebServer();
+    showNetworkCondition();
+}
+
+function showNetworkCondition() {
+    function writeStatus() {
+        writeToOutput(`Is online: ${navigator.onLine}`);
+    }
+
+    window.addEventListener('online', writeStatus);
+    window.addEventListener('offline', writeStatus);
+    writeStatus();
 }
 
 let webServer = null;
