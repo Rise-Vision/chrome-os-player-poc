@@ -283,7 +283,12 @@ function stopWebServer() {
     }
 }
 
+function handleMessage(message) {
+    writeToOutput(`Message received: ${JSON.stringify(message)}`);
+}
+
 chrome.app.window.onClosed.addListener(stopWebServer);
 chrome.runtime.onSuspend.addListener(stopWebServer);
+chrome.runtime.onMessage.addListener(handleMessage);
 
 document.addEventListener("DOMContentLoaded", init);
