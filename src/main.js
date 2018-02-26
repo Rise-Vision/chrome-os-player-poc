@@ -204,8 +204,9 @@ function testAvailableDiskSpace() {
     });
 }
 
-function init() {
-    output = document.querySelector('output');
+function setupButtons() {
+    const closeAppButton = document.getElementById('closeAppButton');
+    closeAppButton.addEventListener('click', () => chrome.app.window.current().close());
 
     const launchViewerButton = document.getElementById('launchViewer');
     launchViewerButton.addEventListener('click', launchViewer);
@@ -227,6 +228,12 @@ function init() {
         event.preventDefault();
         createViewerWindowWithUrl(url);
     });
+}
+
+function init() {
+    output = document.querySelector('output');
+
+    setupButtons();
 
     chrome.storage.local.get("launchData", ({launchData}) => {
         console.log(launchData);
