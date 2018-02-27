@@ -28,6 +28,9 @@ function init() {
         }
     }
 
+    const closeButton = document.getElementById('close');
+    closeButton.addEventListener('click', () => window.close());
+
     chrome.runtime.onMessage.addListener(handleMessage);
 }
 

@@ -143,10 +143,6 @@ function createViewerWindowWithUrl(url) {
                     webview.style.width = '100%';
                     console.log(`loading webview with url: ${url}`);
                     webview.src = url;
-
-                    const closeButton = appWin.contentWindow.document.getElementById('close');
-                    closeButton.addEventListener('click', () => appWin.contentWindow.close());
-
                     appWin.show();
                 }
             );
