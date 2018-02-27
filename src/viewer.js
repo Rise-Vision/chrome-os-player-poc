@@ -31,6 +31,14 @@ function init() {
     const closeButton = document.getElementById('close');
     closeButton.addEventListener('click', () => window.close());
 
+    const screenshotButton = document.getElementById('screenshot');
+    screenshotButton.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        webview.captureVisibleRegion((dataUrl) => {
+            console.log(dataUrl);
+        });
+    });
+
     chrome.runtime.onMessage.addListener(handleMessage);
 }
 
