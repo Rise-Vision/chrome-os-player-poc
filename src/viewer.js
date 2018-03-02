@@ -1,6 +1,7 @@
 import webviewMessagingFn from './webview-messaging'
 
 function init() {
+
     window.addEventListener('message', (event) => {
         console.log(event);
         if (!event.data) {
@@ -9,14 +10,14 @@ function init() {
 
         event.preventDefault();
         const message = event.data;
-        if (message.from === 'messaging-component') {
+        if (message.from === 'viewer') {
             console.log(`viewer window is broadcasting message from webview: ${JSON.stringify(event.data)}`);
             chrome.runtime.sendMessage(event.data);
         }
     });
 
     const webview = document.querySelector('webview');
-    webview.addEventListener('loadstop', () => {
+    webview.addEventListener('contentload', () => {
         webview.executeScript({code: webviewMessagingFn});
         webview.contentWindow.postMessage({from: 'player', topic: 'hello'}, webview.src);
     });
