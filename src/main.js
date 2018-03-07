@@ -248,6 +248,9 @@ function init() {
     showNetworkCondition();
 
     chrome.runtime.requestUpdateCheck((status) => writeToOutput(`update check result: ${status}`));
+
+    const manifest = chrome.runtime.getManifest();
+    writeToOutput(`current version ${manifest.version}`);
 }
 
 chrome.runtime.onUpdateAvailable.addListener((details) => {
