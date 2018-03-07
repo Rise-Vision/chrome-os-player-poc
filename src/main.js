@@ -246,7 +246,15 @@ function init() {
 
     startWebServer();
     showNetworkCondition();
+
+    chrome.runtime.requestUpdateCheck((status) => writeToOutput(`update check result: ${status}`));
 }
+
+chrome.runtime.onUpdateAvailable.addListener((details) => {
+    console.log('update is availeble', details);
+    writeToOutput('update is availeble', details);
+    chrome.runtime.reload();
+});
 
 function showNetworkCondition() {
     function writeStatus() {
