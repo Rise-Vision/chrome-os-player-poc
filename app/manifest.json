@@ -13,7 +13,8 @@
     "system.display",
     "serial",
     "webview",
-    "storage"
+    "storage",
+    "power"
   ],
   "minimum_chrome_version": "52",
   "icons": {

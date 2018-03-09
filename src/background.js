@@ -8,14 +8,18 @@ function createHelloWorldWindow() {
     const width = 600;
     const height = 500;
 
-    chrome.app.window.create('index.html', {
-      id: "helloWorldID",
-      outerBounds: {
-        width,
-        height,
-        left: Math.round((screenWidth - width) / 2),
-        top: Math.round((screenHeight - height) / 2)
-      }
+    const options = {
+        id: "helloWorldID",
+        outerBounds: {
+          width,
+          height,
+          left: Math.round((screenWidth - width) / 2),
+          top: Math.round((screenHeight - height) / 2)
+        }
+    };
+
+    chrome.app.window.create('index.html', options, (mainWindow) => {
+        mainWindow.onClosed.addListener(() => chrome.power.releaseKeepAwake());
     });
 }
 
@@ -44,3 +48,6 @@ function init(launchData) {
 }
 
 chrome.app.runtime.onLaunched.addListener(init);
+
+chrome.power.requestKeepAwake('display');
+
